@@ -1,0 +1,25 @@
+monit.sh: 1.1.0, 2014/08/20 fbscarel $
+
+  * Added support for email reporting using the '-m' option. Multiple
+    recipients can be passed and should be separated using spaces; in this
+    case you MUST enclose the parameter using single or double-quotes. The local
+    '/usr/bin/mail' binary will be used, check your Sendmail/Postfix/Exim
+    configuration. Check globalvars $SUBJECT and $HEADLINE for email
+    customization.
+
+  * Search terms with spaces are now supported using the '-t' option.
+    IMPORTANT: you MUST enclose the parameter using single or double-quotes,
+    else the command line won't be interpreted fully (getopt limitation).
+    Output files under 'searches/' are created using underscores instead of
+    spaces.
+
+  * Improved debugging and reporting using the '-v' option.
+
+  * Changed stripdomain() to match various common URLs prefixes, e.g.:
+    ww.test.domain, www2.test.domain, wwws58.test.domain, etc.
+
+  * Corrected behavior parsing domains from URLs not preceded by 'http[s]://'.
+  
+monit.sh: 1.0.0 - 1.0.3, 2014/08/18 fbscarel $
+
+  * No CHANGELOG recorded.

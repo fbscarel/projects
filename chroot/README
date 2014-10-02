@@ -1,1 +1,23 @@
-test
+The concern of properly segregated webservers and web applications arised with
+frequency while doing consulting work for University of Brasília (UnB). The
+default install of Apache + mod_php on Debian Linux leaves the webserver with
+full filesystem access, which greatly aids attackers in their attempts to take
+over servers.
+
+I came up with this script (aptly called "chroot.sh") to solve that problem. The
+script creates several changed root (chroot) directories where each virtualhost
+will live in, copies web application information, creates users, mounts database
+sockets and sets up nginx/php-fpm configuration files, all defined via
+commandline options. The chroot contains only the absolute bare minimum amount
+of executables, libraries and configuration files to enable a website to work,
+while at the same time making attacks against the webserver much more
+complicated. It was specifically tailored to work on Debian Wheezy (7.0),
+although porting it to other Linux distributions should be easy enough. Check
+out the '-h' help flag for pointers on how to use it, but it's pretty much fire
+and forget.
+
+Be warned that this script makes a lot of assumptions on file and library
+locations, assuming it's running on a Debian-like system. If you're running on
+something different you WILL have to make changes to the directory locations and
+files to be copied to the chroot.
+

@@ -1,0 +1,12 @@
+This is 'semonit', a simple script to monitor search results on various search
+engines for a given term. This term is usually something you want to monitor for
+phishing activity, such as the name of a banking institution for example. The
+script reports any domains not contained in the file 'etc/whitelist.txt' via
+email, stdout or syslog (configured by editing the script directly).
+
+I created this script to monitor the appearance of rogue and malicious websites
+attempting phishing attacks against bank clients; they usually do that via ad
+placement to position themselves towards the top of search results. After
+gathering results, it is possible to check them against a whitelist and generate
+alerts if anything strange shows up.
+
