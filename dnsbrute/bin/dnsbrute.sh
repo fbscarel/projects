@@ -7,7 +7,8 @@ PROGNAME="$( basename $0 )"
 ## file paths
 #
 CONFIG="$DNSBRUTE_HOME/etc/dnsbrute.conf"
-UTIL="$DNSBRUTE_HOME/lib/util.sh"
+FILE_UTILS="$DNSBRUTE_HOME/lib/file_utils.sh"
+IP_UTILS="$DNSBRUTE_HOME/lib/ip_utils.sh"
 
 ## assumed defaults, if unspecified
 #
@@ -89,7 +90,8 @@ print_header() {
 # - - -  main()  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-. $UTIL
+. $FILE_UTILS
+. $IP_UTILS
 
 # check for parameters
 while getopts ":d:o:s:t:w:hr" opt; do
