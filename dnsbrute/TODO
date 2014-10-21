@@ -1,0 +1,12 @@
+This a simple to-do list of features that are currently unimplemented:
+
+dnsbrute.sh:
+
+  - Implement various methods of output (aside from plain CSV), such as
+    pretty-printed stdout, syslog and email.
+
+getrange.sh:
+
+  - Improve documentation
+  - Provide commandline options as offered by dnsbrute.sh, and a configuration
+    file if appropriate 

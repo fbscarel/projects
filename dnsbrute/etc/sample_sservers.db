@@ -1,0 +1,10 @@
+## Put suspicous servers to be looked up against on this file, one server IP
+## per line.
+## Lines starting with '#' will be ignored.
+#
+54.207.24.72
+54.69.12.199
+69.30.240.189
+95.211.210.172
+158.255.2.104
+200.98.66.26

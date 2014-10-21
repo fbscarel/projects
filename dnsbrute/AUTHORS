@@ -1,0 +1,9 @@
+dnsbrute is a program to check suspicious DNS servers for incorrect or malicious
+responses to queries against various domains. The responses can then be compared
+against a control server (known as the Trusted server) and acted upon.
+
+This program was written by Sicoob Confederacao employees to help organizations
+whose clients are frequent victims of DNS spoofing attacks to detect and act
+upon malicious servers, thus mitigating the attack. The list of authors follows:
+
+  Felipe Scarel <felipe.scarel@sicoob.com.br, fbscarel@gmail.com>

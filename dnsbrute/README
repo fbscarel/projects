@@ -1,0 +1,48 @@
+Copyright (C) 2014  Sicoob Confederacao
+
+          dnsbrute, version 1.0.0
+
+This is top-level directory of the dnsbrute program, a software that can be
+used to check suspicious DNS servers for incorrect or malicious responses to
+queries against various domains. The responses can then be compared against a
+control server (known as the Trusted server) and acted upon. This program can
+be used to help organizations whose clients are frequent victims of DNS
+spoofing attacks to detect and act upon malicious servers, thus mitigating the
+attack.
+
+
+* Portability notes
+
+This program has been tested and is known to work on various Unix-like systems,
+including Linux, FreeBSD and OpenBSD. As long as you have a recent Bash version
+(4.0+), things should Just Work (tm).
+
+
+* Files in this directory
+
+  + AUTHORS
+      List of authors of this software, with contact information.
+
+  + bin/
+      Directory containing executable programs pertaining to the package.
+
+  + etc/
+      Directory containing configuration files and sample catalogues of domains,
+      suspicious servers and other resources (.db files) for example purposes.
+
+  + lib/
+      Directory containing helper scripts and libraries used by the programs
+      located in the 'bin/' directory.
+
+  + LICENSE
+      dnsbrute licensing information.
+
+  + README
+      This file.
+
+  + TODO
+      List of unimplemented features that are planned for future versions.
+
+  + var/
+      Directory containing variable runtime data, output files and whitelist
+      databases generated during program execution.
