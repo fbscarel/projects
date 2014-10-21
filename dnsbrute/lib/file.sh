@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# file_utils.sh, 2014/10/21 15:01:12 fbscarel $
+# file.sh, 2014/10/21 15:01:12 fbscarel $
 
 ## file-related utility functions for all scripts in this package
 #
@@ -43,6 +43,23 @@ check_mail(){
   dig $domain | grep "ANSWER: 0" 1> /dev/null && return 1
 
   return 0
+}
+
+
+## check if supplied binary files exist, bail if they don't
+#
+check_binaryexist() {
+  # tricky pass-by-name to get array as parameter, check
+  # http://stackoverflow.com/questions/16461656/bash-how-to-pass-array-as-an-argument-to-a-function
+  local n=$1[@]
+  local a=("${!n}")
+  for file in "${a[@]}"; do
+    local fpath=$( which $file 2> /dev/null )
+    [ ! -z "$fpath" ] && { echo $fpath; return 0; }
+  done
+
+  echo "[!] $file binary not found in \$PATH, terminating." > /dev/stdin
+  return 1
 }
 
 

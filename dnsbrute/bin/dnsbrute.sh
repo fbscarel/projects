@@ -7,8 +7,8 @@ PROGNAME="$( basename $0 )"
 ## file paths
 #
 CONFIG="$DNSBRUTE_HOME/etc/dnsbrute.conf"
-FILE_UTILS="$DNSBRUTE_HOME/lib/file_utils.sh"
-IP_UTILS="$DNSBRUTE_HOME/lib/ip_utils.sh"
+FILE_UTILS="$DNSBRUTE_HOME/lib/file.sh"
+IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
 
 ## assumed defaults, if unspecified
 #

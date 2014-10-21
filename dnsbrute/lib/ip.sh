@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ip_utils.sh, 2014/10/21 15:00:13 fbscarel $
+# ip.sh, 2014/10/21 15:00:13 fbscarel $
 
 ## IP/DNS utility functions for all scripts in this package 
 #
@@ -33,6 +33,18 @@ validip() {
         stat=$?
   fi
   return $stat
+}
+
+
+## test port number for validity
+#
+validport() {
+  if [[ ! $1 =~ ^[0-9]*$ ]]; then
+    return 1
+  elif [ "$1" -lt 1 ] || [ "$1" -gt 65535 ]; then
+    return 1
+  fi
+  return 0
 }
 
 
