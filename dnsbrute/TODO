@@ -7,6 +7,6 @@ dnsbrute.sh:
 
 getrange.sh:
 
-  - Improve documentation
+  - Improve documentation.
   - Provide commandline options as offered by dnsbrute.sh, and a configuration
-    file if appropriate 
+    file if appropriate.
