@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# logparse.sh, 2014/10/21 14:12:33 fbscarel $
+# logparse.sh, 2014/10/22 13:26:43 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
-PROGNAME="$( basename $0 )"
+[ -z $PROGNAME ] && PROGNAME="$( basename $0 )"
 
 ## file paths
 #
@@ -13,6 +13,7 @@ IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
 
 ## binary dependencies
 #
+MAILPROG=(mail)
 NC=(nc)
 
 ## network parameters
@@ -46,6 +47,12 @@ parse_loginfo() {
 
   if ! validip $logserver; then echo "[!] Invalid IP address passed to '-s' option, terminating."; exit 1; fi
   if ! validport $logport; then echo "[!] Invalid port number passed to '-s' option, terminating."; exit 1; fi
+
+  # if not running on Linux/FreeBSD, only localhost addresses are supported
+  if [ "$( uname )" != "Linux" ] && [ "$( uname )" != "FreeBSD" ] && [ "$logserver" != "127.0.0.1" ]; then
+    echo "[!] Non-localhost syslog servers are only supported on Linux and FreeBSD, terminating."
+    exit 1
+  fi
 }
 
 
@@ -72,10 +79,10 @@ usage() {
   echo "              the user.notice level will be used. If unspecified, will be set as 514/UDP."
   echo "              Can be set via configuration file."
   echo "  -s          Send results to syslog server SYSLOG_SERVER, connecting on UDP port PORT."
-  echo "              The server:port pair has to be separated using a colon (':'). This option is"
-  echo "              not supported on OpenBSD systems. If no parameter is given to this option,"
-  echo "              SYSLOG_SERVER will be set as localhost and PORT will be set as 514/UDP. Can"
-  echo "              be set via configuration file."
+  echo "              The server:port pair must be separated using a colon (':'). Remote syslog"
+  echo "              messaging is supported only on Linux and FreeBSD; if running on other Unix"
+  echo "              systems, use localhost (127.0.0.1) logging only. Can be set via"
+  echo "              configuration file."
   echo "  -v          Log to standard output (stdout) using a pretty-printed format."
   exit 1
 }
@@ -89,7 +96,7 @@ usage() {
 . $IP_UTILS
 
 # check for parameters
-while getopts ":l:m:p:s:hv" opt; do
+while getopts "l:m:p:s:hv" opt; do
     case "$opt" in
         h) usage ;;
         l) logfile=${OPTARG} ;;
@@ -104,6 +111,12 @@ while getopts ":l:m:p:s:hv" opt; do
 done
 shift $((OPTIND-1))
 
+# check if any valid output options were passed
+if [ -z "$mail" ] && [ -z "$syslog" ] && [ -z "$stdout" ]; then
+  echo "[!] You must specify at least one output option!"
+  usage
+fi
+
 # parse configuration file, do not override commandline options
 [ -f "$CONFIG" ] && parse_conf || echo "[!] Configuration file $CONFIG not found, continuing..."
 
@@ -112,20 +125,14 @@ shift $((OPTIND-1))
 
 # if still unset, give default values to non-mandatory parameters
 [ -z "$logprio" ] && logprio="user.notice"
-if [ "$syslog" = true ]; then
-  if [ -z "$loginfo" ]; then
-    logserver="127.0.0.1"
-    logport="514"
-  else
-    parse_loginfo
-  fi
-fi
 
 # check if logfile path exists
 check_file $logfile
 
 # check if mail addresses passed to the program are valid
 if [ ! -z "$mails" ]; then
+  stat=$( check_binaryexist MAILPROG ) ; [ "$?" -ne 0 ] && exit 1
+
   retmails=" $mails "
   for value in $mails; do
     if ! check_mail $value; then
@@ -136,11 +143,11 @@ if [ ! -z "$mails" ]; then
   mails="$( echo $retmails | sed -e "s/^ *//;s/ *$//" )"
 fi
 
-# check if netcat is installed
-ncstat=$( check_binaryexist NC ) ; [ "$?" -ne 0 ] && exit 1
-
 # check if we can connect to logserver:logport
 if [ "$syslog" = true ]; then
+  parse_loginfo
+
+  stat=$( check_binaryexist NC ) ; [ "$?" -ne 0 ] && exit 1
   connect=$( nc -w $TIMEOUT -znu "$logserver" "$logport" &> /dev/null )
   if [ "$?" -ne 0 ]; then
     echo "[!] Server $logserver doesn't seem to be listening on port $logport, terminating."

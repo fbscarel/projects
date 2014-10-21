@@ -4,6 +4,7 @@ dnsbrute.sh:
 
   - Implement various methods of output (aside from plain CSV), such as
     pretty-printed stdout, syslog and email.
+  - Support whitelists containing IP subranges
 
 getrange.sh:
 
