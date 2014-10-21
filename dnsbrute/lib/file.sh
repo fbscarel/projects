@@ -8,7 +8,7 @@
 #
 getparam() {
   local delim="$( egrep "^$1" $2 | sed "s/^$1//" )"
-  echo "$( egrep "^$1" $2 | sed "s/.*${delim:0:1} *\(.*\)/\1/" )"
+  echo "$( egrep "^$1" $2 | sed "s/.*${delim:0:2} *\(.*\)/\1/" )"
 }
 
 

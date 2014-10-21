@@ -2,7 +2,7 @@
 # logparse.sh, 2014/10/22 13:26:43 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
-[ -z $PROGNAME ] && PROGNAME="$( basename $0 )"
+PROGNAME="$( basename $0 )"
 
 ## file paths
 #
@@ -19,6 +19,7 @@ NC=(nc)
 ## network parameters
 #
 TIMEOUT=3
+SYSLOG_DEFPORT=514
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,10 +28,17 @@ TIMEOUT=3
 ## parse configuration file for parameters
 #
 parse_conf() {
-  [ -z "$mails" ]     && mails="$( getparam RECIPIENT_ADDRESSES $CONFIG )"
-  [ -z "$logprio" ]   && logprio="$( getparam SYSLOG_PRIORITY $CONFIG )"
-  [ -z "$logserver" ] && logserver="$( getparam SYSLOG_SERVER $CONFIG )"
-  [ -z "$logport" ]   && logport="$( getparam SYSLOG_PORT $CONFIG )"
+  [ -z "$mails" ]   && mails="$( getparam RECIPIENT_ADDRESSES $CONFIG )"
+  [ -z "$logprio" ] && logprio="$( getparam SYSLOG_PRIORITY $CONFIG )"
+
+  if [ -z "$loginfo" ]; then
+    local lserv="$( getparam SYSLOG_SERVER $CONFIG )"
+    if [ -n "$lserv" ]; then
+      local lport="$( getparam SYSLOG_PORT $CONFIG )"
+      [ -z "$lport" ] && lport=$SYSLOG_DEFPORT
+      loginfo="$lserv:$lport"
+    fi
+  fi
 
   return 0
 }
@@ -76,8 +84,7 @@ usage() {
   echo "              Sendmail/Postfix/Exim configuration. Can be set via configuration file."
   echo "  -p          Enter messages to syslog using the specified PRIORITY. This value must be"
   echo "              informed as a 'facility.level' pair, as per logger(1) manpage. By default,"
-  echo "              the user.notice level will be used. If unspecified, will be set as 514/UDP."
-  echo "              Can be set via configuration file."
+  echo "              the user.notice level will be used. Can be set via configuration file."
   echo "  -s          Send results to syslog server SYSLOG_SERVER, connecting on UDP port PORT."
   echo "              The server:port pair must be separated using a colon (':'). Remote syslog"
   echo "              messaging is supported only on Linux and FreeBSD; if running on other Unix"
@@ -100,22 +107,14 @@ while getopts "l:m:p:s:hv" opt; do
     case "$opt" in
         h) usage ;;
         l) logfile=${OPTARG} ;;
-        m) mail=true
-           mails=${OPTARG} ;;
+        m) mails=${OPTARG} ;;
         p) logprio=${OPTARG} ;;
-        s) syslog=true
-           loginfo=${OPTARG} ;;
+        s) loginfo=${OPTARG} ;;
         v) stdout=true ;;
         *) usage ;;
     esac
 done
 shift $((OPTIND-1))
-
-# check if any valid output options were passed
-if [ -z "$mail" ] && [ -z "$syslog" ] && [ -z "$stdout" ]; then
-  echo "[!] You must specify at least one output option!"
-  usage
-fi
 
 # parse configuration file, do not override commandline options
 [ -f "$CONFIG" ] && parse_conf || echo "[!] Configuration file $CONFIG not found, continuing..."
@@ -130,7 +129,7 @@ fi
 check_file $logfile
 
 # check if mail addresses passed to the program are valid
-if [ ! -z "$mails" ]; then
+if [ -n "$mails" ]; then
   stat=$( check_binaryexist MAILPROG ) ; [ "$?" -ne 0 ] && exit 1
 
   retmails=" $mails "
@@ -144,7 +143,7 @@ if [ ! -z "$mails" ]; then
 fi
 
 # check if we can connect to logserver:logport
-if [ "$syslog" = true ]; then
+if [ -n "$loginfo" ]; then
   parse_loginfo
 
   stat=$( check_binaryexist NC ) ; [ "$?" -ne 0 ] && exit 1
@@ -157,5 +156,5 @@ fi
 
 # all good, check output options and act accordingly
 if [ "$stdout" = true ]; then output_file   "$logfile" "/dev/stdout"; fi
-if [ "$mail" = true ];   then output_mail   "$logfile" "$mails"; fi
-if [ "$syslog" = true ]; then output_syslog "$logfile" "$logserver" "$logport" "$logprio"; fi
+if [ -n "$mails" ];      then output_mail   "$logfile" "$mails"; fi
+if [ -n "$loginfo" ];    then output_syslog "$logfile" "$logserver" "$logport" "$logprio"; fi

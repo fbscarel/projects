@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# dnsbrute.sh, 2014/10/21 10:45:25 fbscarel $
+# dnsbrute.sh, 2014/10/22 14:11:44 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
 
 ## file paths
 #
+LOGPARSE="$DNSBRUTE_HOME/bin/logparse.sh"
 CONFIG="$DNSBRUTE_HOME/etc/dnsbrute.conf"
 FILE_UTILS="$DNSBRUTE_HOME/lib/file.sh"
 IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
@@ -54,6 +55,13 @@ usage() {
   echo "Available options:"
   echo "  -d          List of domains to be looked up and compared. Mandatory."
   echo "  -h          Show this help screen and exit."
+  echo "  -l          Invoke 'logparse.sh' after execution to process results. The"
+  echo "              parameter passed to this option will be passed over verbatim."
+  echo "              You MUST enclose this parameter using double-quotes, otherwise"
+  echo "              it will be interpreted as being passed directly to $PROGNAME ."
+  echo "              It is not necessary, however, to specify the logfile to be"
+  echo "              processed, as it's implicit. Check the 'logparse.sh' online help"
+  echo "              option ('-h') for usage information."
   echo "  -o          Specify alternative outfile to log output into. If unspecified,"
   echo "              'var/dnsbrute.sh.\$TIMESTAMP.out' will be used. \$TIMESTAMP"
   echo "              format is Unix epoch."
@@ -94,10 +102,11 @@ print_header() {
 . $IP_UTILS
 
 # check for parameters
-while getopts ":d:o:s:t:w:hr" opt; do
+while getopts "d:l:o:s:t:w:hr" opt; do
     case "$opt" in
         h) usage ;;
         d) domains=${OPTARG} ;;
+        l) logline=${OPTARG} ;;
         o) outfile=${OPTARG} ;;
         r) recurse=true ;;
         s) sservers=${OPTARG} ;;
@@ -157,3 +166,6 @@ while read domain; do
     done
   done < $sservers
 done < $domains
+
+# process outfile using log parser, if requested
+[ -n "$logline" ] && $LOGPARSE -l $outfile $logline
