@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# log.sh, 2014/10/22 09:02:54 fbscarel $
+# log.sh, 2014/10/22 15:17:52 fbscarel $
 
 ## logging functions for all scripts in this package 
 #
