@@ -1,0 +1,22 @@
+--- bin/dnsbrute-1.1.0.sh	2014-10-23 09:44:08.619336745 -0200
++++ bin/dnsbrute.sh	2014-10-23 09:40:27.724949587 -0200
+@@ -11,6 +11,10 @@
+ FILE_UTILS="$DNSBRUTE_HOME/lib/file.sh"
+ IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
+ 
++## network parameters
++#
++DIG_TIMEOUT=2
++
+ ## assumed defaults, if unspecified
+ #
+ DEFAULT_WDIR="$DNSBRUTE_HOME/var/whitelists"
+@@ -24,7 +28,7 @@
+ #
+ getdomain() {
+   [ "$recurse" = true ] && local rec="+recurse" || local rec="+norecurse"
+-  local retval="$( dig +noall +answer +short $rec $1 $2 A | sort -n | tr '\n' ' ' )"
++  local retval="$( dig +noall +answer +short +time=$DIG_TIMEOUT $rec $1 @$2 A | sort -n | tr '\n' ' ' )"
+   echo "$( nocname "$retval" )"
+ }
+ 

@@ -11,6 +11,10 @@ CONFIG="$DNSBRUTE_HOME/etc/dnsbrute.conf"
 FILE_UTILS="$DNSBRUTE_HOME/lib/file.sh"
 IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
 
+## network parameters
+#
+DIG_TIMEOUT=2
+
 ## assumed defaults, if unspecified
 #
 DEFAULT_WDIR="$DNSBRUTE_HOME/var/whitelists"
@@ -24,7 +28,7 @@ DEFAULT_TSERVER="8.8.8.8"
 #
 getdomain() {
   [ "$recurse" = true ] && local rec="+recurse" || local rec="+norecurse"
-  local retval="$( dig +noall +answer +short $rec $1 $2 A | sort -n | tr '\n' ' ' )"
+  local retval="$( dig +noall +answer +short +time=$DIG_TIMEOUT $rec $1 @$2 A | sort -n | tr '\n' ' ' )"
   echo "$( nocname "$retval" )"
 }
 

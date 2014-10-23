@@ -18,7 +18,7 @@ NC=(nc)
 
 ## network parameters
 #
-TIMEOUT=3
+NC_TIMEOUT=3
 SYSLOG_DEFPORT=514
 
 
@@ -147,7 +147,7 @@ if [ -n "$loginfo" ]; then
   parse_loginfo
 
   stat=$( check_binaryexist NC ) ; [ "$?" -ne 0 ] && exit 1
-  connect=$( nc -w $TIMEOUT -znu "$logserver" "$logport" &> /dev/null )
+  connect=$( nc -w $NC_TIMEOUT -znu "$logserver" "$logport" &> /dev/null )
   if [ "$?" -ne 0 ]; then
     echo "[!] Server $logserver doesn't seem to be listening on port $logport, terminating."
     exit 1
