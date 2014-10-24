@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ip.sh, 2014/10/21 15:00:13 fbscarel $
+# ip.sh, 2014/10/24 12:44:32 fbscarel $
 
 ## IP utility functions for all scripts in this package 
 #

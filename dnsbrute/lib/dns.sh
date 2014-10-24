@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dns.sh, 2014/10/24 10:22:16 fbscarel $
+# dns.sh, 2014/10/24 12:44:28 fbscarel $
 
 ## DNS utility functions for all scripts in this package 
 #

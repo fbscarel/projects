@@ -1,6 +1,6 @@
 Copyright (C) 2014  Sicoob Confederacao
 
-          dnsbrute, version 1.1.0
+          dnsbrute, version 1.2.0-beta1
 
 This is top-level directory of the dnsbrute program, a software that can be
 used to check suspicious DNS servers for incorrect or malicious responses to

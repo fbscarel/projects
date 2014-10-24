@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# logparse.sh, 2014/10/22 15:17:24 fbscarel $
+# logparse.sh, 2014/10/24 12:44:21 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
