@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ip.sh, 2014/10/21 15:00:13 fbscarel $
 
-## IP/DNS utility functions for all scripts in this package 
+## IP utility functions for all scripts in this package 
 #
 
 ## echo out class B/C ranges for ip
@@ -45,16 +45,4 @@ validport() {
     return 1
   fi
   return 0
-}
-
-
-## remove CNAME records from $1, keep only IP addresses
-nocname() {
-  local retval=""
-
-  for record in $1; do
-    if validip $record; then retval="$retval $record"; fi
-  done
-
-  echo "$retval" | sed "s/^ //"
 }

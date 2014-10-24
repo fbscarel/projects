@@ -4,6 +4,13 @@
 ## logging functions for all scripts in this package 
 #
 
+## echo query type on file $1
+#
+function query_type() {
+  cat $1 | grep "^# Query type:" | cut -d':' -f2 | sed 's/^  *//'
+}
+
+
 ## print pretty-printed output to file with parameters:
 ##   $1: log file
 ##   $2: output file
@@ -14,9 +21,23 @@ function output_file() {
   local domain=""
   local dflag=true
 
+  # lookup query type and set trusted/suspicious fields and header
+  local qtype="$( query_type $1 )"
+  case "$qtype" in
+    "A")   tfields="2,3"
+           sfields="4,5"
+           echo "Domain,Trusted DNS,Trusted reported IPs,Suspicious DNS,Suspicious reported IP" > $tmpfile
+           ;;
+#    "MX")  ;;
+#    "NS")  ;;
+    "SOA") tfields="2,3,4,5"
+           sfields="6,7,8,9"
+           echo "Domain,Trusted DNS,Trusted primary DNS,Trusted hostmaster,Trusted serial,Suspicious DNS,Suspicious primary DNS,Suspicious hostmaster,Suspicious serial" > $tmpfile
+           ;;
+  esac
+
   # strip comments from logfile
   sort $1 | egrep -v "^#" > $stripcomm_file
-  echo "Domain,Suspicious DNS,Suspicious reported IP,Trusted DNS,Trusted reported IPs" > $tmpfile
 
   # parse logfile, grouping by domain
   while read line; do
@@ -30,10 +51,11 @@ function output_file() {
     if [ "$dflag" = true ]; then
       dflag=false
       echo -n "$domain," >> $tmpfile
-      echo -n "$( echo $line | cut -d',' -f 2,3 )," >> $tmpfile
-      echo "$( echo $line | cut -d',' -f 4,5 )" >> $tmpfile
+      echo -n "$( echo $line | cut -d',' -f $tfields )," >> $tmpfile
+      echo "$( echo $line | cut -d',' -f $sfields )" >> $tmpfile
     else
-      echo " ,$( echo $line | cut -d',' -f 2,3 ), , " >> $tmpfile
+      jmp="$( echo $tfields | sed 's/.*\([0-9]$\)/\1/' )" 
+      echo "$( printf %${jmp}s | sed 's/ / ,/g' )$( echo $line | cut -d',' -f $sfields )" >> $tmpfile
     fi
   done < $stripcomm_file
 
@@ -86,7 +108,16 @@ function output_syslog() {
 
   while read line; do
     local loginfo=( $(echo $line | sed 's/,/ /g') )
-    local msg="Suspicious DNS ${loginfo[1]} reported IP ${loginfo[2]} for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[3]} reported IP ${loginfo[4]}"
+
+    # lookup query type and set trusted/suspicious fields and header
+    local qtype="$( query_type $1 )"
+    case "$qtype" in
+      "A")   local msg="Suspicious DNS ${loginfo[3]} reported IP ${loginfo[4]} for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported IP ${loginfo[2]}" ;;
+#      "MX")  ;;
+#      "NS")  ;;
+      "SOA") local msg="Suspicious DNS ${loginfo[5]} reported [ primary DNS ${loginfo[6]} , hostmaster ${loginfo[7]} , serial ${loginfo[8]} ] for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported [ primary DNS ${loginfo[2]} , hostmaster ${loginfo[3]} , serial ${loginfo[4]} ]" ;;
+    esac
+
     logger $remote -p $4 -t "$PROGNAME" "$msg" 
   done < $stripcomm_file
 

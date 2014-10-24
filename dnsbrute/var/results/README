@@ -1,0 +1,2 @@
+This directory is used to place search results, by default.
+You can change that by passing the '-o' option to 'bin/dnsbrute.sh'.
