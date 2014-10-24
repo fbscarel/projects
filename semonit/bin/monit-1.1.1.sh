@@ -18,7 +18,7 @@ USER_AGENT="User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Tride
 ## file options
 #
 CURTIME=`date +%Y%m%d%H%M`
-ABS_PATH=`readlink -f $0 | sed 's/\/[^\/]*$//'`
+ABS_PATH=`readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//'`
 WHITELIST="$ABS_PATH/etc/whitelist.txt"
 SRCHDIR="$ABS_PATH/var/searches"
 TMPFILE="$ABS_PATH/var/tmpdomains.txt"
@@ -144,7 +144,7 @@ logresults() {
     seng=`echo $line | cut -d"|" -f3`
 
     # uncomment this line to use syslog reporting; remember to set $HOST and $PORT on globalvars section above
-    logger -d -n $HOST -p $PORT -p $PRIO -t "$PROGTAG" -u /dev/null "Search term $1 : found domain $domain : URL $url : search engine(s) $seng"
+    #logger -d -n $HOST -p $PORT -p $PRIO -t "$PROGTAG" -u /dev/null "Search term $1 : found domain $domain : URL $url : search engine(s) $seng"
 
     # whitelist matching; remember to set $WHITELIST on globalvars section above
     #if [ $(egrep -c "^$domain$" $WHITELIST) -eq 0 ]; then
