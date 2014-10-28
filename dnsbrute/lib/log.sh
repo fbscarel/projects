@@ -21,6 +21,11 @@ function output_file() {
   local domain=""
   local dflag=true
 
+  # ensure tmpfiles are clean
+  if [ -f $tmpfile ] || [ -f $stripcomm_file ]; then
+    rm -f $tmpfile $stripcomm_file
+  fi
+
   # lookup query type and set trusted/suspicious fields and header
   tfields="2,3"
   sfields="4,5"
@@ -66,7 +71,6 @@ function output_file() {
   local sep="$( printf %${lline}s | tr ' ' '-' )"
 
   cat $tmpfile | sed "s/^[a-z]/$sep\\`echo -e '\n\r'`&/" > $2
-  rm -f $tmpfile $stripcomm_file
 }
 
 

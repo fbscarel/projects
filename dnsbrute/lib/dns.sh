@@ -230,6 +230,21 @@ query_SOA() {
 }
 
 
+## check which DNS servers from file $1 are online, return new file $2 containing this set
+check_nsonline() {
+  while read dns; do
+    if check_comment "$dns"; then continue; fi
+
+    connect=$( dig @$dns +time=$DIG_TIMEOUT . A &> /dev/null )
+    if [ "$?" -ne 0 ]; then
+      echo "[!] Server $dns doesn't seem to be listening to DNS queries, removed from query set."
+    else
+      echo "$dns" >> $2
+    fi
+  done < $1
+}
+
+
 ## remove CNAME records from $1, keep only IP addresses
 nocname() {
   local retval=""

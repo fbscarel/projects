@@ -11,10 +11,11 @@ CONFIG="$DNSBRUTE_HOME/etc/dnsbrute.conf"
 DNS_UTILS="$DNSBRUTE_HOME/lib/dns.sh"
 FILE_UTILS="$DNSBRUTE_HOME/lib/file.sh"
 IP_UTILS="$DNSBRUTE_HOME/lib/ip.sh"
+DNS_TMPFILE="$DNSBRUTE_HOME/var/.dns_tmpfile"
 
 ## network parameters
 #
-DIG_TIMEOUT=2
+DIG_TIMEOUT=1
 
 ## assumed defaults, if unspecified
 #
@@ -102,6 +103,11 @@ print_header() {
 . $FILE_UTILS
 . $IP_UTILS
 
+# ensure tmpfiles are clean
+if [ -f $DNS_TMPFILE ]; then
+  rm -f $DNS_TMPFILE
+fi
+
 # check for parameters
 while getopts "d:l:o:q:s:t:w:har" opt; do
     case "$opt" in
@@ -154,12 +160,15 @@ fi
 
 print_header
 
+# remove offline servers from query set
+check_nsonline $sservers $DNS_TMPFILE
+
 # make queries according to $qtype
 case "$qtype" in
-  "A")   query_A   $domains $sservers $outfile $tserver ;;
-  "MX")  query_MX  $domains $sservers $outfile $tserver ;;
-  "NS")  query_NS  $domains $sservers $outfile $tserver ;;
-  "SOA") query_SOA $domains $sservers $outfile $tserver ;;
+  "A")   query_A   $domains $DNS_TMPFILE $outfile $tserver ;;
+  "MX")  query_MX  $domains $DNS_TMPFILE $outfile $tserver ;;
+  "NS")  query_NS  $domains $DNS_TMPFILE $outfile $tserver ;;
+  "SOA") query_SOA $domains $DNS_TMPFILE $outfile $tserver ;;
 esac
 
 # process outfile using log parser, if requested
