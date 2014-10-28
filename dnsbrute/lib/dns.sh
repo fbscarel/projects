@@ -25,7 +25,7 @@ printflags() {
 #
 getdomain() {
   setflags
-  local retval="$( dig +noall +answer +short +time=$DIG_TIMEOUT $aa $rec $1 $qtype @$2 | grep -v '^;' )"
+  local retval="$( dig @$2 +noall +authority +answer +short +time=$DIG_TIMEOUT $aa $rec $1 $qtype | grep -v '^;' )"
 
   if [ -z "$retval" ]; then
     echo ""
@@ -33,6 +33,22 @@ getdomain() {
     retval="$( echo $retval | sort -n | tr '\n' ' ' )"
     echo "$( nocname "$retval" )"
   fi
+}
+
+
+## get Mail Exchange (MX) information about domain $1 from server $2
+getmx() {
+  setflags
+  retval="$( dig @$2 +noall +authority +answer +short +time=$DIG_TIMEOUT $aa $rec $1 $qtype | grep -v '^;' | sed 's/[0-9]* //' )"
+  [ -z "$retval" ] && echo "" || echo "$( echo $retval | sort -n | tr '\n' ' ' )"
+}
+
+
+## get Nameserver (NS) information about domain $1 from server $2
+getns() {
+  setflags
+  retval="$( dig @$2 +noall +authority +answer +short +time=$DIG_TIMEOUT $aa $rec $1 $qtype | grep -v '^;' )"
+  [ -z "$retval" ] && echo "" || echo "$( echo $retval | sort -n | tr '\n' ' ' )"
 }
 
 
@@ -97,6 +113,78 @@ query_A() {
               
           [ "$flag" -eq 0 ] && echo "$domain,$4,$trusted,$dns,$ip" >> $3
         fi
+      done
+    done < $2
+  done < $1
+}
+
+
+## make MX-type queries on trusted/suspicious DNS servers using global vars
+##   $1: domain list file
+##   $2: suspicious servers file
+##   $3: output file
+##   $4: trusted server
+#
+query_MX() {
+  # complement header information
+  echo "# Query type: MX" >> $3
+  printflags $3
+  echo "# Fields: Domain, Trusted DNS, Trusted MX servers, Suspicious DNS, Suspicious MX server" >> $3
+  echo "#" >> $3
+
+  while read domain; do
+    if check_comment "$domain"; then continue; fi
+    local trusted="$( getmx $domain $4 )"
+
+    # if we have no response from trusted, skip this domain
+    [ -z "$trusted" ] && continue
+
+    while read dns; do
+      if check_comment "$dns"; then continue; fi
+      local suspicious="$( getmx $domain $dns )"
+
+      # if we have no response, skip this server
+      [ -z "$suspicious" ] && continue
+
+      # MX record not found on trusted result set?
+      for mx in $suspicious; do
+        [[ $trusted != *$mx* ]] && echo "$domain,$4,$trusted,$dns,$mx" >> $3
+      done
+    done < $2
+  done < $1
+}
+
+
+## make NS-type queries on trusted/suspicious DNS servers using global vars
+##   $1: domain list file
+##   $2: suspicious servers file
+##   $3: output file
+##   $4: trusted server
+#
+query_NS() {
+  # complement header information
+  echo "# Query type: NS" >> $3
+  printflags $3
+  echo "# Fields: Domain, Trusted DNS, Trusted Nameservers, Suspicious DNS, Suspicious Nameserver" >> $3
+  echo "#" >> $3
+
+  while read domain; do
+    if check_comment "$domain"; then continue; fi
+    local trusted="$( getns $domain $4 )"
+
+    # if we have no response from trusted, skip this domain
+    [ -z "$trusted" ] && continue
+
+    while read dns; do
+      if check_comment "$dns"; then continue; fi
+      local suspicious="$( getns $domain $dns )"
+
+      # if we have no response, skip this server
+      [ -z "$suspicious" ] && continue
+
+      # MX record not found on trusted result set?
+      for ns in $suspicious; do
+        [[ $trusted != *$ns* ]] && echo "$domain,$4,$trusted,$dns,$ns" >> $3
       done
     done < $2
   done < $1

@@ -22,14 +22,13 @@ function output_file() {
   local dflag=true
 
   # lookup query type and set trusted/suspicious fields and header
+  tfields="2,3"
+  sfields="4,5"
   local qtype="$( query_type $1 )"
   case "$qtype" in
-    "A")   tfields="2,3"
-           sfields="4,5"
-           echo "Domain,Trusted DNS,Trusted reported IPs,Suspicious DNS,Suspicious reported IP" > $tmpfile
-           ;;
-#    "MX")  ;;
-#    "NS")  ;;
+    "A")   echo "Domain,Trusted DNS,Trusted reported IPs,Suspicious DNS,Suspicious reported IP" > $tmpfile ;;
+    "MX")  echo "Domain,Trusted DNS,Trusted MX servers,Suspicious DNS,Suspicious MX server" > $tmpfile ;;
+    "NS")  echo "Domain,Trusted DNS,Trusted Nameservers,Suspicious DNS,Suspicious Nameserver" > $tmpfile ;;
     "SOA") tfields="2,3,4,5"
            sfields="6,7,8,9"
            echo "Domain,Trusted DNS,Trusted primary DNS,Trusted hostmaster,Trusted serial,Suspicious DNS,Suspicious primary DNS,Suspicious hostmaster,Suspicious serial" > $tmpfile
@@ -113,8 +112,8 @@ function output_syslog() {
     local qtype="$( query_type $1 )"
     case "$qtype" in
       "A")   local msg="Suspicious DNS ${loginfo[3]} reported IP ${loginfo[4]} for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported IP ${loginfo[2]}" ;;
-#      "MX")  ;;
-#      "NS")  ;;
+      "MX")  local msg="Suspicious DNS ${loginfo[3]} reported MX server ${loginfo[4]} for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported MX servers ${loginfo[2]}" ;;
+      "NS")  local msg="Suspicious DNS ${loginfo[3]} reported Nameserver ${loginfo[4]} for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported Nameservers ${loginfo[2]}" ;;
       "SOA") local msg="Suspicious DNS ${loginfo[5]} reported [ primary DNS ${loginfo[6]} , hostmaster ${loginfo[7]} , serial ${loginfo[8]} ] for domain ${loginfo[0]} , contrasting with Trusted DNS ${loginfo[1]} reported [ primary DNS ${loginfo[2]} , hostmaster ${loginfo[3]} , serial ${loginfo[4]} ]" ;;
     esac
 
