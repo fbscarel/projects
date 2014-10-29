@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# file.sh, 2014/10/22 15:17:48 fbscarel $
+# file.sh, 2014/10/29 10:30:37 fbscarel $
 
 ## file-related utility functions for all scripts in this package
 #

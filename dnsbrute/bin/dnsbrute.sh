@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dnsbrute.sh, 2014/10/24 12:44:17 fbscarel $
+# dnsbrute.sh, 2014/10/29 10:30:27 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
