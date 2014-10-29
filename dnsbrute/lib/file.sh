@@ -63,6 +63,12 @@ check_binaryexist() {
 }
 
 
+## check if we're running on verbose mode, print $1 if true
+check_verb() {
+  [ "$verbose" == true ] && echo "$1"
+}
+
+
 ## check if line $1 is led by a comment sign, or is a blank line
 #
 check_comment() {

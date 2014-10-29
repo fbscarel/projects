@@ -3,6 +3,7 @@
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
+VERSION="1.2.0-beta3"
 
 ## file paths
 #
@@ -52,9 +53,10 @@ usage() {
   echo "which can be found in 'etc/dnsbrute.conf'."
   echo
   echo "Available options:"
-  echo "  -a          Toggle '+aaonly' flag on DNS queries, which will only report"
-  echo "              authoritative answers. If unspecified, queries will also return"
-  echo "              non-authoritative results by default."
+  echo "  -a          Only check authoritative answers from suspicious servers."
+  echo "              Non-authoritative answers, even if incorrect or malicious, will"
+  echo "              be IGNORED. If unset, queries will also check non-authoritative"
+  echo "              results by default."
   echo "  -d          List of domains to be looked up and compared. Mandatory."
   echo "  -h          Show this help screen and exit."
   echo "  -l          Invoke 'logparse.sh' after execution to process results. The"
@@ -69,7 +71,7 @@ usage() {
   echo "              \$TIMESTAMP format is Unix epoch."
   echo "  -q          Query type to be performed. If unspecified, the default is an A"
   echo "              (address) query. Available types: A, MX, NS, SOA."
-  echo "  -r          Toggle RD (recursion desired) bit in DNS queries. If unspecified,"
+  echo "  -r          Toggle RD (recursion desired) bit in DNS queries. If unset,"
   echo "              queries will be non-recursive by default."
   echo "  -s          Specify file containing a list of suspicious servers to be looked"
   echo "              up against. This file should contain one IP address per line. The"
@@ -80,6 +82,7 @@ usage() {
   echo "              list of suspicious servers for validity. If unspecified, the"
   echo "              Google DNS Server (8.8.8.8) will be used. Can be set via"
   echo "              configuration file."
+  echo "  -v          Toggle verbose mode."
   echo "  -w          Specify directory where whitelists will be searched. Whitelists"
   echo "              can be generated using the 'bin/getrange.sh' helper script. If"
   echo "              unspecified, 'var/whitelists' will be used by default. Can be"
@@ -109,7 +112,7 @@ if [ -f $DNS_TMPFILE ]; then
 fi
 
 # check for parameters
-while getopts "d:l:o:q:s:t:w:har" opt; do
+while getopts "d:l:o:q:s:t:w:harv" opt; do
     case "$opt" in
         h) usage ;;
         a) aaonly=true ;;
@@ -120,6 +123,7 @@ while getopts "d:l:o:q:s:t:w:har" opt; do
         r) recurse=true ;;
         s) sservers=${OPTARG} ;;
         t) tserver=${OPTARG} ;;
+        v) verbose=true ;;
         w) wdir=${OPTARG} ;;
         *) usage ;;
     esac
@@ -158,18 +162,14 @@ if [ "$qtype" != "A" ]  && [ "$qtype" != "MX" ] &&
   exit 1
 fi
 
+check_verb "[*] dnsbrute-$VERSION: Starting operation."
 print_header
 
 # remove offline servers from query set
 check_nsonline $sservers $DNS_TMPFILE
 
-# make queries according to $qtype
-case "$qtype" in
-  "A")   query_A   $domains $DNS_TMPFILE $outfile $tserver ;;
-  "MX")  query_MX  $domains $DNS_TMPFILE $outfile $tserver ;;
-  "NS")  query_NS  $domains $DNS_TMPFILE $outfile $tserver ;;
-  "SOA") query_SOA $domains $DNS_TMPFILE $outfile $tserver ;;
-esac
+# make DNS queries according to $qtype
+nsquery $domains $DNS_TMPFILE $outfile $tserver
 
 # process outfile using log parser, if requested
 [ -n "$logline" ] && $LOGPARSE -l $outfile $logline

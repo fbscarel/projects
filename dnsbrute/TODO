@@ -5,7 +5,10 @@ dnsbrute.sh:
   (DONE) - Implement various methods of output (aside from plain CSV), such as
            pretty-printed stdout, syslog and email.
   (DONE) - Add support for recursive/authoritative-only queries
-  (PART) - Add support for A, MX, NS and SOA query types
+  (DONE) - Add support for A, MX, NS and SOA query types
+  (DONE) - Add verbose mode
+  (DONE) - Remove offline suspicious servers from query set
+  (DONE) - lib/dns.sh refactoring
          - Support whitelists containing IP subranges
 
 getrange.sh:
