@@ -4,7 +4,6 @@
 ## DNS utility functions for all scripts in this package 
 #
 
-
 ## print query flags to $1
 #
 printflags() {
