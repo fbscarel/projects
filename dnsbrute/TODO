@@ -6,13 +6,13 @@ dnsbrute.sh:
            pretty-printed stdout, syslog and email.
   (DONE) - Add support for recursive/authoritative-only queries
   (DONE) - Add support for A, MX, NS and SOA query types
-  (DONE) - Add verbose mode
+  (DONE) - Add verbose mode, improved
   (DONE) - Remove offline suspicious servers from query set
   (DONE) - lib/dns.sh refactoring
          - Support whitelists containing IP subranges
 
 getrange.sh:
 
-         - Improve documentation.
-         - Provide commandline options as offered by dnsbrute.sh, and a
+  (DONE) - Improve documentation.
+  (DONE) - Provide commandline options as offered by dnsbrute.sh, and a
            configuration file if appropriate.

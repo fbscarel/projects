@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# dnsbrute.sh, 2014/10/29 10:30:27 fbscarel $
+# dnsbrute.sh, 2014/11/10 11:22:42 fbscarel $
 
 DNSBRUTE_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
-VERSION="1.2.0-beta3"
+VERSION="1.2.0"
 
 ## file paths
 #
@@ -37,6 +37,27 @@ parse_conf() {
   [ -z "$wdir" ]     && wdir="$( getparam WHITELIST_DIR $CONFIG )"
 
   return 0
+}
+
+
+## if running verbose, print configuration parameters being used
+#
+print_conf() {
+  check_verb "[*] Using configuration options:"
+  check_verb "      Domain file:                   $DNSBRUTE_HOME/$domains"
+  check_verb "      Suspicious servers file:       $DNSBRUTE_HOME/$sservers"
+  check_verb "      Output file:                   $outfile"
+  check_verb "      Whitelist directory:           $wdir"
+  check_verb "      Trusted server:                $tserver"
+  check_verb "      Using query type:              $qtype"
+
+  [ "$aaonly" = true ]  && local aastr="authoritative" || local aastr="non-authoritative"
+  [ "$recurse" = true ] && local rcstr="recursive"     || local rcstr="non-recursive"
+  local qopt="      Using query options:           $aastr $rcstr"
+  check_verb "$qopt"
+
+  [ ! -z "$logline" ] && check_verb "      Using 'logparse' commandline:  $logline"
+  check_verb " "
 }
 
 
@@ -163,6 +184,7 @@ if [ "$qtype" != "A" ]  && [ "$qtype" != "MX" ] &&
 fi
 
 check_verb "[*] dnsbrute-$VERSION: Starting operation."
+print_conf
 print_header
 
 # remove offline servers from query set
