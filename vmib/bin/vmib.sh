@@ -15,6 +15,8 @@ VMIB_CONF="vmib.conf"
 #
 DEFAULT_BUILD_DIR="$VMIB_HOME/var/build"
 DEFAULT_CONF_DIR="$VMIB_HOME/etc"
+DEFAULT_DEPLOY_DIR="$VMIB_HOME/etc/deploy"
+DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel pam sysvinit udev"
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +24,7 @@ DEFAULT_CONF_DIR="$VMIB_HOME/etc"
 
 ## parse configuration file for parameters
 #
-parse_conf() {
+function parse_conf() {
   [ -z "$build_dir" ]        && build_dir="$( getparam BUILD_DIR $vmib_conf )"
   [ -z "$device" ]           && device="$( getparam DEVICE $vmib_conf )"
   [ -z "$deploy_dir" ]       && deploy_dir="$( getparam DEPLOY_DIR $vmib_conf )"
@@ -77,6 +79,10 @@ function usage() {
   echo "              (for example, the kernel or an init system) your system could"
   echo "              become unbootable. Can be set via configuration file."
   echo "  -v          Toggle verbose mode."
+  echo "  -y          Answer 'yes' to all questions. Important changes, such as disk"
+  echo "              formatting and file overwrites, WILL BE COMMITTED without"
+  echo "              confirmation. Only use this option if you're absolutely sure"
+  echo "              your parameters are correct."
   exit 1
 }
 
@@ -84,6 +90,7 @@ function usage() {
 # - - -  main()  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+. $FILE_UTILS
 . $PACKAGE_UTILS
 
 # check for parameters
@@ -96,14 +103,36 @@ while getopts "b:c:d:f:p:hv" opt; do
         f) deploy_dir=${OPTARG} ;;
         p) install_packages=${OPTARG} ;;
         v) verbose=true ;;
+        y) allyes=true ;;
         *) usage ;;
     esac
 done
 shift $((OPTIND-1))
 
 # if not using a custom configuration directory, set default
-[ -z "$conf_dir" ] && conf_dir="$DEFAULT_CONF_DIR"
+[ -z "$conf_dir" ] && conf_dir="$DEFAULT_CONF_DIR" || check_dir $conf_dir
 vmib_conf="$conf_dir/$VMIB_CONF"
 
 # parse configuration file, do not override commandline options
 [ -f "$vmib_conf" ] && parse_conf || echo "[!] Configuration file $vmib_conf not found, continuing..."
+
+# check mandatory options
+[ -z "$device" ] && { echo "[!] Option '-d' is mandatory!"; usage; }
+
+# if still unset, give default values to non-mandatory parameters
+[ -z "$build_dir" ]        && build_dir="$DEFAULT_BUILD_DIR"
+[ -z "$deploy_dir" ]       && deploy_dir="$DEFAULT_DEPLOY_DIR"
+[ -z "$install_packages" ] && install_packages="$DEFAULT_INSTALL_PACKAGES"
+
+# check if supplied directories exist
+check_dir "$build_dir"
+check_dir "$deploy_dir"
+
+# check if supplied block devices exist
+check_blockdev "$device"
+
+# check if packages set for installation are registered in the program
+check_packages "$install_packages"
+
+# prompt user, format and mount target device
+check_yes "We're now going to format device $device . Go ahead? (y/n) "
