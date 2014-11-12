@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-function do_kernel() {
+function pkg_kernel_hook() {
   return;
 }

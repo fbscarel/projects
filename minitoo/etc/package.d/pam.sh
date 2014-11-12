@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function do_pam() {
+function pkg_pam() {
   USE="-audit"
   packages="sys-apps/shadow virtual/pam"
 }

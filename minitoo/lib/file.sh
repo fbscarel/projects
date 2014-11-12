@@ -46,20 +46,6 @@ function check_blockdev() {
 }
 
 
-## check if supplied mail address is valid
-#
-function check_mail(){
-  local IFS="@"
-
-  set -- $1
-  [ "${#@}" -ne 2 ] && return 1
-  domain="$2"
-  dig $domain | grep "ANSWER: 0" 1> /dev/null && return 1
-
-  return 0
-}
-
-
 ## check if supplied binary files exist, bail if they don't
 #
 function check_binaryexist() {
@@ -74,35 +60,6 @@ function check_binaryexist() {
 
   echo "[!] $file binary not found in \$PATH, terminating." > /dev/stdin
   return 1
-}
-
-
-## check if we're running on verbose mode, print $1 if true
-#
-function check_verb() {
-  [ "$verbose" == true ] && echo "$1"
-}
-
-## check if user answers 'yes' to question $1
-#
-function check_yes() {
-  [ "$allyes" == true ] && return 0
-
-  local opt=""
-  while true; do
-    echo -n "$1"
-    read opt
-
-    opt="$( echo "$opt" | tr '[:upper:]' '[:lower:]' )"
-    if [ "$opt" == "y" ]; then
-      return 1;
-    elif [ "$opt" == "n" ]; then
-      echo "[*] Terminating due to user input."
-      exit 1
-    else
-      echo "[!] Invalid option, please answer 'y' or 'n'."
-    fi
-  done
 }
 
 

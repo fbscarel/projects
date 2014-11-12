@@ -10,6 +10,7 @@ VERSION="1.0.0"
 DISK_UTILS="$MINITOO_HOME/lib/disk.sh"
 FILE_UTILS="$MINITOO_HOME/lib/file.sh"
 PACKAGE_UTILS="$MINITOO_HOME/lib/package.sh"
+VAR_UTILS="$MINITOO_HOME/lib/var.sh"
 MINITOO_CONF="minitoo.conf"
 PACKAGE_DIR="package.d"
 
@@ -95,6 +96,7 @@ function usage() {
 . $DISK_UTILS
 . $FILE_UTILS
 . $PACKAGE_UTILS
+. $VAR_UTILS
 
 # check for parameters
 while getopts "b:c:d:f:p:hvy" opt; do
@@ -148,3 +150,6 @@ check_verb "[*] minitoo-$VERSION: Starting operation."
 # prompt user, format and mount target device
 check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "
 disk_prep $device $build_dir
+
+# go through package list, install each one
+package_install $build_dir $conf_dir "$install_packages"

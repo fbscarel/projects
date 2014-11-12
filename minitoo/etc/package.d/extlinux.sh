@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-function do_extlinux() {
+function pkg_extlinux_hook() {
   return;
 }

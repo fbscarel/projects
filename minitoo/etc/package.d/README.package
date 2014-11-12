@@ -18,7 +18,7 @@ example, here we have the 'busybox' package instruction file:
 
   1  #!/usr/bin/env bash
   2
-  3  function do_busybox() {
+  3  function pkg_busybox() {
   4    USE="-make-symlinks -mdev -sep-usr"
   5    packages="sys-apps/busybox"
   6  }
@@ -29,10 +29,10 @@ The format is pretty simple:
           interpreted by the Bash shell.
 
   Line 3) Here we declare a function that will be loaded by Minitoo. The
-          function name should follow the format 'do_PACKAGE', where 'PACKAGE'
-          is the name of the package (or group of packages) that this function
-          installs. You could then have 'do_apache' or 'do_firefox' as
-          function names, for example.
+          function should be named using the format 'pkg_PACKAGE', where
+          'PACKAGE' is the name of the package (or group of packages) that this
+          function installs. You could then have 'pkg_apache' or 'pkg_firefox'
+          as function names, for example.
 
   Line 4) This is where we specify the USE flags that Portage is going to use
           while building our package(s). The USE flags, simply put, are
@@ -46,10 +46,17 @@ The format is pretty simple:
 
   Line 5) Here we list the package (or packages) that this function will
           install. You can use any of the formats accepted by 'emerge', that
-          is: ebuilds, tb2files, files, sets or atoms.
+          is: ebuilds, tbz2files, files, sets or atoms.
           
           You will usually want to specify a package using the common
           'category/package_name' format or (if needed) select a specific
           version number of the package you wish to install using the '<', '>'
           and '=' atoms. For example, you may select the 'x11-wm/fluxbox'
           package, or the '=x11-libs/gtk+-2.24.2' package version.
+
+After creating the package instruction file, it's pretty simple to add it to
+the Minitoo build system. Add your function name (created on 'Line 3' on the
+example above), without the 'pkg_' prefix, to the package list given to the
+'-p' commandline option or the 'INSTALL_PACKAGES' configuration file parameter.
+
+That's it! Your new package should now be built and installed without trouble.

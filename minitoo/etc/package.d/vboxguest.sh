@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-function do_vboxguest() {
+function pkg_vboxguest() {
   packages="app-emulation/virtualbox-guest-additions"
 }
