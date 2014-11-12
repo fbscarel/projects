@@ -1,0 +1,55 @@
+This is the README file for the 'etc/package.d' diretory of the Minitoo build
+system.
+
+This directory contains various files with build instructions for packages.
+Each file is a Bash script, containing a single function that specifies the
+build options to be used by the configure/compile scripts run by Portage, and
+also which packages should be installed.
+
+Keep in mind that files with a '.sh' suffix are the ONLY ones loaded by
+Minitoo.
+
+
+- - - - -
+
+
+It is easy to add new packages to Minitoo, alongside the provided ones. For
+example, here we have the 'busybox' package instruction file:
+
+  1  #!/usr/bin/env bash
+  2
+  3  function do_busybox() {
+  4    USE="-make-symlinks -mdev -sep-usr"
+  5    packages="sys-apps/busybox"
+  6  }
+
+The format is pretty simple:
+
+  Line 1) This is the standard shebang (#!) declaring this file should be
+          interpreted by the Bash shell.
+
+  Line 3) Here we declare a function that will be loaded by Minitoo. The
+          function name should follow the format 'do_PACKAGE', where 'PACKAGE'
+          is the name of the package (or group of packages) that this function
+          installs. You could then have 'do_apache' or 'do_firefox' as
+          function names, for example.
+
+  Line 4) This is where we specify the USE flags that Portage is going to use
+          while building our package(s). The USE flags, simply put, are
+          compilation options for the package that can enable or disable
+          program features and dependencies. You should review which USE flags
+          are available for the package you wish to install, and set them
+          accordingly. Global USE flags can be checked on the
+          '/usr/portage/profiles/use.desc' file, and local (i.e. per-package)
+          USE flags can be found on the '/usr/portage/profiles/use.local.desc'
+          file.
+
+  Line 5) Here we list the package (or packages) that this function will
+          install. You can use any of the formats accepted by 'emerge', that
+          is: ebuilds, tb2files, files, sets or atoms.
+          
+          You will usually want to specify a package using the common
+          'category/package_name' format or (if needed) select a specific
+          version number of the package you wish to install using the '<', '>'
+          and '=' atoms. For example, you may select the 'x11-wm/fluxbox'
+          package, or the '=x11-libs/gtk+-2.24.2' package version.

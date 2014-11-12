@@ -86,7 +86,23 @@ function check_verb() {
 ## check if user answers 'yes' to question $1
 #
 function check_yes() {
-  echo 
+  [ "$allyes" == true ] && return 0
+
+  local opt=""
+  while true; do
+    echo -n "$1"
+    read opt
+
+    opt="$( echo "$opt" | tr '[:upper:]' '[:lower:]' )"
+    if [ "$opt" == "y" ]; then
+      return 1;
+    elif [ "$opt" == "n" ]; then
+      echo "[*] Terminating due to user input."
+      exit 1
+    else
+      echo "[!] Invalid option, please answer 'y' or 'n'."
+    fi
+  done
 }
 
 

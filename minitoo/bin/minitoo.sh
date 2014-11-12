@@ -7,9 +7,11 @@ VERSION="1.0.0"
 
 ## file paths
 #
+DISK_UTILS="$MINITOO_HOME/lib/disk.sh"
 FILE_UTILS="$MINITOO_HOME/lib/file.sh"
 PACKAGE_UTILS="$MINITOO_HOME/lib/package.sh"
 MINITOO_CONF="minitoo.conf"
+PACKAGE_DIR="package.d"
 
 ## assumed defaults, if unspecified
 #
@@ -90,11 +92,12 @@ function usage() {
 # - - -  main()  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+. $DISK_UTILS
 . $FILE_UTILS
 . $PACKAGE_UTILS
 
 # check for parameters
-while getopts "b:c:d:f:p:hv" opt; do
+while getopts "b:c:d:f:p:hvy" opt; do
     case "$opt" in
         h) usage ;;
         b) build_dir=${OPTARG} ;;
@@ -112,6 +115,12 @@ shift $((OPTIND-1))
 # if not using a custom configuration directory, set default
 [ -z "$conf_dir" ] && conf_dir="$DEFAULT_CONF_DIR" || check_dir $conf_dir
 minitoo_conf="$conf_dir/$MINITOO_CONF"
+package_dir="$conf_dir/$PACKAGE_DIR"
+
+# load package files
+for file in $( ls $package_dir/*.sh ); do
+  . $file
+done
 
 # parse configuration file, do not override commandline options
 [ -f "$minitoo_conf" ] && parse_conf || echo "[!] Configuration file $minitoo_conf not found, continuing..."
@@ -125,14 +134,17 @@ minitoo_conf="$conf_dir/$MINITOO_CONF"
 [ -z "$install_packages" ] && install_packages="$DEFAULT_INSTALL_PACKAGES"
 
 # check if supplied directories exist
-check_dir "$build_dir"
-check_dir "$deploy_dir"
+check_dir $build_dir
+check_dir $deploy_dir
 
 # check if supplied block devices exist
-check_blockdev "$device"
+check_blockdev $device
 
 # check if packages set for installation are registered in the program
 check_packages "$install_packages"
 
+check_verb "[*] minitoo-$VERSION: Starting operation."
+
 # prompt user, format and mount target device
-check_yes "We're now going to format device $device . Go ahead? (y/n) "
+check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "
+disk_prep $device $build_dir
