@@ -1,21 +1,21 @@
 #!/bin/bash
-# vmib.sh, 2014/11/11 10:06:21 fbscarel $
+# minitoo.sh, 2014/11/11 10:06:21 fbscarel $
 
-VMIB_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
+MINITOO_HOME="$( readlink -f $0 | sed 's/\/[^\/]*$//' | sed 's/\/[^\/]*$//' )"
 PROGNAME="$( basename $0 )"
 VERSION="1.0.0"
 
 ## file paths
 #
-FILE_UTILS="$VMIB_HOME/lib/file.sh"
-PACKAGE_UTILS="$VMIB_HOME/lib/package.sh"
-VMIB_CONF="vmib.conf"
+FILE_UTILS="$MINITOO_HOME/lib/file.sh"
+PACKAGE_UTILS="$MINITOO_HOME/lib/package.sh"
+MINITOO_CONF="minitoo.conf"
 
 ## assumed defaults, if unspecified
 #
-DEFAULT_BUILD_DIR="$VMIB_HOME/var/build"
-DEFAULT_CONF_DIR="$VMIB_HOME/etc"
-DEFAULT_DEPLOY_DIR="$VMIB_HOME/etc/deploy"
+DEFAULT_CONF_DIR="$MINITOO_HOME/etc"
+DEFAULT_BUILD_DIR="$MINITOO_HOME/var/build"
+DEFAULT_DEPLOY_DIR="$MINITOO_HOME/var/deploy"
 DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel pam sysvinit udev"
 
 
@@ -25,10 +25,10 @@ DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel pam sysvinit 
 ## parse configuration file for parameters
 #
 function parse_conf() {
-  [ -z "$build_dir" ]        && build_dir="$( getparam BUILD_DIR $vmib_conf )"
-  [ -z "$device" ]           && device="$( getparam DEVICE $vmib_conf )"
-  [ -z "$deploy_dir" ]       && deploy_dir="$( getparam DEPLOY_DIR $vmib_conf )"
-  [ -z "$install_packages" ] && install_packages="$( getparam INSTALL_PACKAGES $vmib_conf )"
+  [ -z "$build_dir" ]        && build_dir="$( getparam BUILD_DIR $minitoo_conf )"
+  [ -z "$device" ]           && device="$( getparam DEVICE $minitoo_conf )"
+  [ -z "$deploy_dir" ]       && deploy_dir="$( getparam DEPLOY_DIR $minitoo_conf )"
+  [ -z "$install_packages" ] && install_packages="$( getparam INSTALL_PACKAGES $minitoo_conf )"
 
   return 0
 }
@@ -44,16 +44,16 @@ function usage() {
   echo
   echo "Some program parameters can be set via configuration file, as explained below."
   echo "Unless you re-locate the default configuration directory (using the '-c'"
-  echo "option), the file can be found in 'etc/vmib.conf'."
+  echo "option), the file can be found in 'etc/minitoo.conf'."
   echo
   echo "Available options:"
   echo "  -b          Use BUILD_DIR as mountpoint for the device specified with the"
   echo "              '-d' option. If unspecified, the 'var/build' directory will"
   echo "              be used by default. Can be set via configuration file."
   echo "  -c          Use CONFIG_DIR as the configuration directory to control"
-  echo "              Portage and VMIB execution. Be careful: if you specify an"
+  echo "              Portage and MINITOO execution. Be careful: if you specify an"
   echo "              alternate configuration directory, the program will expect all"
-  echo "              relevant configuration files (for VMIB, Portage and deployment)"
+  echo "              relevant configuration files (for MINITOO, Portage and deployment)"
   echo "              to be found on the new directory. If unspecified, the 'etc/'"
   echo "              directory will be used by default."
   echo "  -d          Use DEVICE as target for the minimal system. This parameter"
@@ -69,7 +69,7 @@ function usage() {
   echo "              emulate the root ('/') filesystem structure; that is, if you"
   echo "              want to copy a file to the '/home/user' directory, this file"
   echo "              must exist inside the deploy directory as"
-  echo "              'deploy/home/user/file'. If unspecified, the 'etc/deploy'"
+  echo "              'deploy/home/user/file'. If unspecified, the 'var/deploy'"
   echo "              directory will be used by default. Can be set via configuration"
   echo "              file."
   echo "  -p          Install PACKAGES on the minimal system. This option should be"
@@ -111,10 +111,10 @@ shift $((OPTIND-1))
 
 # if not using a custom configuration directory, set default
 [ -z "$conf_dir" ] && conf_dir="$DEFAULT_CONF_DIR" || check_dir $conf_dir
-vmib_conf="$conf_dir/$VMIB_CONF"
+minitoo_conf="$conf_dir/$MINITOO_CONF"
 
 # parse configuration file, do not override commandline options
-[ -f "$vmib_conf" ] && parse_conf || echo "[!] Configuration file $vmib_conf not found, continuing..."
+[ -f "$minitoo_conf" ] && parse_conf || echo "[!] Configuration file $minitoo_conf not found, continuing..."
 
 # check mandatory options
 [ -z "$device" ] && { echo "[!] Option '-d' is mandatory!"; usage; }
