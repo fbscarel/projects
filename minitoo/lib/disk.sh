@@ -11,7 +11,10 @@ function disk_prep() {
   local partitions="$( mount | grep "^$1" | cut -d' ' -f1 | sort )"
   for part in $partitions; do
     if [ -n "$part" ]; then
-      check_yes "[*] Partition $part from device $1 seems to be mounted. Unmount? (y/n) "
+      if check_yes "[*] Partition $part from device $1 seems to be mounted. Unmount? (y/n) "; then
+        echo "[!] Can't continue, device is mounted. Terminating."
+        exit 1
+      fi
       umount $part
     fi
   done

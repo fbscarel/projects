@@ -14,7 +14,7 @@ function check_verb() {
 ## check if user answers 'yes' to question $1
 #
 function check_yes() {
-  [ "$allyes" == true ] && return 0
+  [ "$allyes" == true ] && return 1
 
   local opt=""
   while true; do
@@ -23,10 +23,9 @@ function check_yes() {
 
     opt="$( echo "$opt" | tr '[:upper:]' '[:lower:]' )"
     if [ "$opt" == "y" ]; then
-      return 1;
+      return 1
     elif [ "$opt" == "n" ]; then
-      echo "[*] Terminating due to user input."
-      exit 1
+      return 0
     else
       echo "[!] Invalid option, please answer 'y' or 'n'."
     fi
@@ -38,4 +37,12 @@ function check_yes() {
 #
 function check_function() {
   [ "$( type -t "$1" )" == "function" ] && return 0 || return 1
+}
+
+
+## terminate program with generic message
+#
+function exit_generic() {
+  echo "[!] Terminating due to user input."
+  exit 1
 }

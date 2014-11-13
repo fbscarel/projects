@@ -10,8 +10,8 @@ Keep in mind that files with a '.sh' suffix are the ONLY ones loaded by
 Minitoo.
 
 
-- - - - -
-
+Adding new packages
+-------------------
 
 It is easy to add new packages to Minitoo, alongside the provided ones. For
 example, here we have the 'busybox' package instruction file:
@@ -60,3 +60,82 @@ example above), without the 'pkg_' prefix, to the package list given to the
 '-p' commandline option or the 'INSTALL_PACKAGES' configuration file parameter.
 
 That's it! Your new package should now be built and installed without trouble.
+
+
+Creating hook functions
+-----------------------
+
+In addition to simply installing new packages using Portage, as explained
+above, you may also need to do some advanced or custom actions to install and
+configure software on your minimal systems. The Linux kernel and bootloaders
+are good examples of cases where this kind of control is needed, but it also
+extends to software not included in the Portage database, as well as
+configuration steps that need to be automated.
+
+Minitoo offers support for so-called "hook functions", which is a fancy way of
+calling functions that are invoked as-is when installing a package. This, as
+stated before, is very useful to configure a package that was recently
+installed, and is also a handy way to install software that is not meant to be
+handled by emerge/Portage.
+
+A good example (if a bit complex) is the 'etc/package.d/kernel.sh' package
+instruction file. Look at the function name:
+
+  function pkg_kernel_hook() {
+
+Much like standard package installation functions, hook functions have a
+specific naming pattern. You should use a name in the format
+'pkg_PACKAGE_hook', where 'PACKAGE' is the name of the package you wish to
+install or configure. A package may have a standard 'install' function (as
+explained in the previous section) and a hook function simultaneously. It is
+also possible to have only an install function, or only a hook function, if
+appropriate.
+
+Since hook functions are executed as-is, you can do pretty much anything you
+want with them, as long as it's valid Bash code. Of course, you might need a
+few variables to make your job easier, and luckily enough Minitoo provides some
+global variables for that purpose.
+
+
+Here's a list of the most useful variables available to hook functions:
+
+  $build_dir:        directory where the minimal system is being installed, as
+                     set by the '-b' commandline option or the 'BUILD_DIR'
+                     configuration file parameter. You can chroot to this
+                     directory to execute 'native' calls, if needed.
+
+  $conf_dir:         directory where configuration files reside.
+
+  $device:           the block device that was formatted/mounted during disk
+                     preparation.
+
+  $deploy_dir:       directory that will be deployed after package
+                     installation. You may want to copy or refer to files that
+                     are contained in this directory even before deployment.
+
+  $install_packages: a space-separated list of packages that are being
+                     installed on the minimal system. You might have to parse
+                     this list in order to find a specific package.
+
+  $kver:             kernel version being compiled and installed.
+
+  $kconfig:          configuration file used to compile the kernel above.
+
+
+Besides variables, there's also a number of helpful functions that you may use:
+
+  check_verb $1:     check if running of verbose mode. If true, print string $1
+                     to stdout. The pattern used by Minitoo for output messages
+                     is preceding informational messages with '[*]' and error
+                     messages with '[!]'.
+
+  check_yes $1:      prompt the user with question $1 and return response code.
+                     If the answer was 'yes', the function returns '1', else it
+                     returns '0'. The only valid answers are '[YyNn]'; all other
+                     characters/strings are ignored and the question is asked
+                     again. Usually, questions are terminated with the available
+                     options to help the user, as in: '(y/n)'.
+
+  exit_generic:      takes no arguments. Ends the program abruptly with a
+                     generic "Terminating due to user input" message. Use
+                     sparingly.

@@ -37,35 +37,51 @@ function parse_conf() {
 }
 
 
+## parse kernel options passed via commandline
+#
+function parse_kopts() {
+  local IFS=" "
+
+  set -- $kernel_opts
+  kver="$1"
+  kconfig="$2"
+}
+
+
 ## show program usage and exit
 #
 function usage() {
-  echo "Usage: $( basename $0 ) -d DEVICE [-b BUILD_DIR] [-c CONFIG_DIR]" 1>&2
-  echo "                    [-f DEPLOYFILES_DIR] [-p PACKAGES] [-v]"
+  echo "Usage: $( basename $0 ) [-b BUILD_DIR] [-c CONFIG_DIR] [-d DEVICE]" 1>&2
+  echo "                  [-f DEPLOYFILES_DIR] [-p PACKAGES] [-v]"
   echo "Build a minimal system on BUILD_DIR using Gentoo's Portage system. You can"
-  echo "customize the system via various configuration flags, explained below."
+  echo "customize the system via various configuration flags."
   echo
   echo "Some program parameters can be set via configuration file, as explained below."
   echo "Unless you re-locate the default configuration directory (using the '-c'"
   echo "option), the file can be found in 'etc/minitoo.conf'."
   echo
   echo "Available options:"
-  echo "  -b          Use BUILD_DIR as mountpoint for the device specified with the"
-  echo "              '-d' option. If unspecified, the 'var/build' directory will"
-  echo "              be used by default. Can be set via configuration file."
+  echo
+  echo "  -b          Use BUILD_DIR as the target installation directory. If a DEVICE"
+  echo "              has been set with the '-d' option, the program will attempt to"
+  echo "              format and mount the disk under BUILD_DIR. If unspecified, the"
+  echo "              'var/build' directory will be used by default. Can be set via"
+  echo "              configuration file."
+  echo
   echo "  -c          Use CONFIG_DIR as the configuration directory to control"
-  echo "              Portage and MINITOO execution. Be careful: if you specify an"
+  echo "              Portage and Minitoo execution. Be careful: if you specify an"
   echo "              alternate configuration directory, the program will expect all"
-  echo "              relevant configuration files (for MINITOO, Portage and deployment)"
+  echo "              relevant configuration files (for Minitoo, Portage and deployment)"
   echo "              to be found on the new directory. If unspecified, the 'etc/'"
   echo "              directory will be used by default."
+  echo
   echo "  -d          Use DEVICE as target for the minimal system. This parameter"
   echo "              must be a valid hard disk on the '/dev' directory. WARNING: the"
   echo "              hard disk (for example, '/dev/sdb') will be COMPLETELY wiped,"
   echo "              and we'll create a single partition spanning the whole disk."
-  echo "              The MBR code will also be OVERWRITTEN, so be careful."
-  echo "              This parameter is mandatory, unless specified via configuration"
-  echo "              file."
+  echo "              The MBR code will also be OVERWRITTEN, so be careful. Can be set"
+  echo "              via configuration file."
+  echo
   echo "  -f          Use DEPLOYFILES_DIR as template, copying its files to the"
   echo "              minimal system, verbatim. This option can be used to customize"
   echo "              your system post-installation. Keep in mind this directory must"
@@ -75,13 +91,51 @@ function usage() {
   echo "              'deploy/home/user/file'. If unspecified, the 'var/deploy'"
   echo "              directory will be used by default. Can be set via configuration"
   echo "              file."
+  echo
+  echo "  -k          Specify kernel parameters for the 'kernel' package to use during"
+  echo "              installation. Available kernel parameters are: version and"
+  echo "              configuration file. This parameter should be in the format"
+  echo "              \"VERSION CONFIG_FILE_PATH\", that is, a space-separated list,"
+  echo "              surrounded by double-quotes, containing the desired infomation."
+  echo "              For example:"
+  echo
+  echo "                -k \"3.15.10-hardened-r1 /home/user/kconfig\""
+  echo
+  echo "              The example above will use the kernel located in the"
+  echo "              '/usr/src/linux-3.15.10-hardened-r1' directory, with the"
+  echo "              options set in the configuration file found in"
+  echo "              '/home/user/kconfig'."
+  echo
+  echo "              If a kernel version is provided, but the custom configuration"
+  echo "              file field is omitted, Minitoo will use the file found in"
+  echo "              '/usr/src/linux-\$VERSION/.config'"
+  echo
+  echo "              This parameter is optional. If you invoke the installation of"
+  echo "              the 'kernel' package without using the '-k' option, Minitoo"
+  echo "              will use the kernel pointed to by the '/usr/src/linux' symlink,"
+  echo "              and the configuration located in '/usr/src/linux/.config'."
+  echo
   echo "  -p          Install PACKAGES on the minimal system. This option should be"
-  echo "              a comma-separated list of packages to install. Check the"
-  echo "              'lib/package.sh' file to see the packages available for"
-  echo "              installation. WARNING: if you opt to skip crucial packages"
+  echo "              a space-separated list of packages to install, surrounded by"
+  echo "              double-quotes. The full list of packages available for"
+  echo "              installation can be found in the 'etc/package.d' directory. If"
+  echo "              unspecified, the following packages will be installed by"
+  echo "              default:"
+  echo
+  echo "                baselayout busybox extlinux glibc kernel pam sysvinit udev"
+  echo
+  echo "              A subset of the packages above could be selected via"
+  echo "              commandline using the following example:"
+  echo
+  echo "                -p \"baselayout busybox glibc kernel sysvinit\""
+  echo
+  echo "              WARNING: if you opt to skip crucial packages"
   echo "              (for example, the kernel or an init system) your system could"
-  echo "              become unbootable. Can be set via configuration file."
+  echo "              become unbootable. This parameter can be set via configuration"
+  echo "              file."
+  echo
   echo "  -v          Toggle verbose mode."
+  echo
   echo "  -y          Answer 'yes' to all questions. Important changes, such as disk"
   echo "              formatting and file overwrites, WILL BE COMMITTED without"
   echo "              confirmation. Only use this option if you're absolutely sure"
@@ -99,13 +153,14 @@ function usage() {
 . $VAR_UTILS
 
 # check for parameters
-while getopts "b:c:d:f:p:hvy" opt; do
+while getopts "b:c:d:f:k:p:hvy" opt; do
     case "$opt" in
         h) usage ;;
         b) build_dir=${OPTARG} ;;
         c) conf_dir=${OPTARG} ;;
         d) device=${OPTARG} ;;
         f) deploy_dir=${OPTARG} ;;
+        k) kernel_opts=${OPTARG} ;;
         p) install_packages=${OPTARG} ;;
         v) verbose=true ;;
         y) allyes=true ;;
@@ -113,6 +168,13 @@ while getopts "b:c:d:f:p:hvy" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+# check for trailing parameters
+if [ -n "$1" ]; then
+  echo "[!] Unrecognized trailing parameters on commandline."
+  echo "[!] Check if you didn't forget to enclose parameters with double-quotes."
+  exit 1
+fi
 
 # if not using a custom configuration directory, set default
 [ -z "$conf_dir" ] && conf_dir="$DEFAULT_CONF_DIR" || check_dir $conf_dir
@@ -127,9 +189,6 @@ done
 # parse configuration file, do not override commandline options
 [ -f "$minitoo_conf" ] && parse_conf || echo "[!] Configuration file $minitoo_conf not found, continuing..."
 
-# check mandatory options
-[ -z "$device" ] && { echo "[!] Option '-d' is mandatory!"; usage; }
-
 # if still unset, give default values to non-mandatory parameters
 [ -z "$build_dir" ]        && build_dir="$DEFAULT_BUILD_DIR"
 [ -z "$deploy_dir" ]       && deploy_dir="$DEFAULT_DEPLOY_DIR"
@@ -139,17 +198,28 @@ done
 check_dir $build_dir
 check_dir $deploy_dir
 
-# check if supplied block devices exist
-check_blockdev $device
+# if set, check whether supplied block device exists
+[ -n "$device" ] && check_blockdev $device
 
 # check if packages set for installation are registered in the program
 check_packages "$install_packages"
 
-check_verb "[*] minitoo-$VERSION: Starting operation."
+# parse kernel options and check for validity
+if [ -n "$kernel_opts" ]; then
+  parse_kopts
+  [ -n "$kver" ]    && check_dir /usr/src/linux-$kver
+  [ -n "$kconfig" ] && check_file $kconfig
+fi
 
-# prompt user, format and mount target device
-check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "
-disk_prep $device $build_dir
+echo "[*] minitoo-$VERSION: Starting operation. Invoke with '-h' for detailed help."
+
+# if $device is set, prompt user, format and mount target device
+if [ -n "$device" ]; then
+  if check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "; then exit_generic; fi
+  disk_prep $device $build_dir
+else
+  if check_yes "[*] No device set. Installation will be done directly to $build_dir . Continue? (y/n) "; then exit_generic; fi
+fi
 
 # go through package list, install each one
 package_install $build_dir $conf_dir "$install_packages"
