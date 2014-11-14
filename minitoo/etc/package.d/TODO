@@ -1,0 +1,15 @@
+PACKAGES OK:
+
+baselayout.sh
+busybox.sh
+extlinux.sh
+kernel.sh
+ncurses.sh
+shadow.sh
+sysvinit.sh
+udev.sh
+
+MAKE HOOK COPYING LIBSTDC++ AND LIBGCC_S:
+glibc.sh
+
+REST IS TODO

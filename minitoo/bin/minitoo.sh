@@ -11,6 +11,7 @@ DISK_UTILS="$MINITOO_HOME/lib/disk.sh"
 FILE_UTILS="$MINITOO_HOME/lib/file.sh"
 PACKAGE_UTILS="$MINITOO_HOME/lib/package.sh"
 VAR_UTILS="$MINITOO_HOME/lib/var.sh"
+VAR_DIR="$MINITOO_HOME/var"
 MINITOO_CONF="minitoo.conf"
 PACKAGE_DIR="package.d"
 
@@ -19,7 +20,7 @@ PACKAGE_DIR="package.d"
 DEFAULT_CONF_DIR="$MINITOO_HOME/etc"
 DEFAULT_BUILD_DIR="$MINITOO_HOME/var/build"
 DEFAULT_DEPLOY_DIR="$MINITOO_HOME/var/deploy"
-DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel pam sysvinit udev"
+DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel shadow sysvinit udev"
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -122,7 +123,7 @@ function usage() {
   echo "              unspecified, the following packages will be installed by"
   echo "              default:"
   echo
-  echo "                baselayout busybox extlinux glibc kernel pam sysvinit udev"
+  echo "                baselayout busybox extlinux glibc kernel shadow sysvinit udev"
   echo
   echo "              A subset of the packages above could be selected via"
   echo "              commandline using the following example:"
@@ -221,5 +222,16 @@ else
   if check_yes "[*] No device set. Installation will be done directly to $build_dir . Continue? (y/n) "; then exit_generic; fi
 fi
 
-# go through package list, install each one
+# recursively resolve dependencies between packages, return ordered list
+check_verb "[*] Processing package list..."
+package_order "$install_packages"
+
+# go through ordered package list, install each one
+check_verb "[*] Installing packages and dependencies on $build_dir ."
 package_install $build_dir $conf_dir "$install_packages"
+
+# copy over '$deploy_dir' contents to '$build_dir'
+check_verb "[*] Syncing content between $deploy_dir and $build_dir ."
+rsync -a $deploy_dir/ $build_dir/
+
+check_verb "[*] Finished. No error reported."
