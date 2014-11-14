@@ -1,0 +1,13 @@
+diff --git a/dnsbrute/lib/dns.sh b/dnsbrute/lib/dns.sh
+index 9e4e13a..bb0be87 100644
+--- a/dnsbrute/lib/dns.sh
++++ b/dnsbrute/lib/dns.sh
+@@ -46,7 +46,7 @@ getdomain() {
+ 
+   # cache query on tmpfile
+   [ "$recurse" = true ] && local rec="+recurse" || local rec="+norecurse"
+-  dig @$2 +time=$DIG_TIMEOUT $rec $1 $qtype > $qfile
++  dig @$2 +noadditional +time=$DIG_TIMEOUT $rec $1 $qtype > $qfile
+ 
+   # if authoritative-only flag is set, check if answer is authoritative
+   # ONLY FOR suspicious queries
