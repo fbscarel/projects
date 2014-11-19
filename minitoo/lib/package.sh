@@ -8,7 +8,7 @@
 ## packages
 ## $2 may contain, optionally, the function where an error was found
 #
-function check_packages() {
+function package_check() {
   local function=""
 
   for function in $1; do
@@ -43,11 +43,15 @@ function package_install() {
     # check if this function has packages to install
     if check_function "pkg_${function}"; then
       pkg_${function}
-      [ -n "$packages" ] && USE="$USE" emerge -bkq --quiet-build --binpkg-respect-use=y --config-root=$config_root --root=$1 $packages
+      if [ -n "$packages" ]; then
+        check_verb "[*] Installing package $function ..."
+        USE="$USE" emerge -bkq --quiet-build --binpkg-respect-use=y --config-root=$config_root --root=$1 $packages
+      fi
     fi
 
     # check if there's a hook function to run
     if check_function "pkg_${function}_hook"; then
+      check_verb "[*] Running hooks for package $function ..."
       pkg_${function}_hook
     fi
   done
@@ -103,7 +107,7 @@ function package_tsort() {
 ## and topological sorting; writes sorted list to global variable
 ## $install_packages, space-separated
 #
-package_order() {
+function package_order() {
   pkgfile="$VAR_DIR/.pkg_order"
   local tmpfile="$VAR_DIR/.tmp_order"
 

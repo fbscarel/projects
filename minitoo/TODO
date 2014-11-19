@@ -1,0 +1,10 @@
+install oracle java + Xtst
+install opera
+write opt to choose shell (busybox sh / bash)
+write opt to clear python .pyc .pyo files
+write opt to clear doc/info/man dirs
+write opt to clear locales except for XYZ
+
+
+ - Support package versioning
+ - Detect packages installed previously and avoid reinstall

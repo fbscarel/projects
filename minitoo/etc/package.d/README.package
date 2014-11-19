@@ -191,3 +191,87 @@ Besides variables, there's also a number of helpful functions that you may use:
   exit_generic:      takes no arguments. Ends the program abruptly with a
                      generic "Terminating due to user input" message. Use
                      sparingly.
+
+
+Automatically removing locales and documentation
+------------------------------------------------
+
+Minitoo is a build system focused on minimal systems. To achieve that goal, we
+usually have to forgo a lot of content that exists in a feature-rich system,
+such as locales and optional documentation. These kinds of files usually take
+up a lot of space in a system, and are non-critical to its operation. As such,
+we've provided a way to automatically remove these from your package
+installations.
+
+First, let's look at locales. As you might have seen by now, locales can be
+selected using the '-l' commandline option or the 'LOCALES' configuration file
+parameter. The way this configuration works is as such: the user selects which
+locales he wants to KEEP in his system (for example, fr_FR for French or pt_BR
+for Brazilian Portuguese), and ALL other locales are removed from the minimal
+system. The 'en_US' locale is kept under all circumstances for compatibility
+purposes. If no option is specified, we don't touch locales: they're all kept
+intact.
+
+Under the hood, the system works like this: for each locale set by the user, a
+number of patterns will be saved (that is, not removed). For example, if a user
+wants the 'pt_BR' locale to be saved, we'll use the following patterns:
+
+  pt_br
+  pt-br
+  pt
+  br
+
+This is done to account for non-standard directory naming done by some
+packages, which could result in the deletion of locales the user wanted to
+save. The matching is done in a case-insensitive fashion, so even if the
+directories are named 'pt_br', 'PT_BR' or 'pt_BR', they'll all be kept
+regardless. The pattern expansion explained above is done for all locales
+specified by the user.
+
+To remove locales Minitoo looks at a list of directories located in a file
+designated by the global variable '$LOCALE_DIRS'. We process each of these
+directories, and remove all the directories that don't match the patterns
+expanded by the method explained in the previous paragraph. For example, take a
+look at the following line of the hook function for the 'opera' package:
+
+  # append Opera locale directory to globalvar $LOCALE_DIRS
+  echo "/usr/local/share/opera/locale" >> $LOCALE_DIRS
+
+The line above appends the directory '/usr/local/share/opera/locale' to the
+$LOCALE_DIRS file, which will ultimately be processed by the 'locale_remove'
+function (file 'lib/locale.sh'). This directory location is of course relative
+to '$build_dir'.
+
+Therefore, to automatically remove locales from your recently-added package, all
+you have to do is find where the locale directory for your package gets
+installed inside '$build_dir', and append this directory to '$LOCALE_DIRS'. Keep
+in mind this operation should to be done inside a hook function, not a regular
+install or dependency function. If your package only uses 'emerge' to install
+itself (and thus, doesn't have a hook function), simply create a one-liner hook
+function containing the redirection command.
+
+Be extremely careful to use the APPEND redirection operator ('>>') and NOT the
+regular redirection operator ('>'), otherwise you'll overwrite '$LOCALE_DIRS'
+completely.
+
+Documentation removal is extremely similar to locale removal (even simpler,
+though), and is activated via the '-s' commandline option. Minitoo uses the
+global '$DOC_DIRS' variable to keep track of which directories contain
+documentation, and remove those using the 'doc_remove' function (file
+'lib/doc.sh'). The operation is analogous to the one done by 'locale_remove',
+but an important difference is that there's no documentation to be optionally
+kept.
+
+Take a look at this example from the 'gtk' package:
+
+  # append GTK documentation directory to globalvar $DOC_DIRS
+  echo "/usr/share/gtk-doc" >> $DOC_DIRS
+
+Just like locale removal, documentation removal will process all directories
+added to the file pointed to by '$DOC_DIRS', and remove each one of them. Again,
+the directory location in the command above is relative to '$build_dir'.
+
+To add documentation removal to your package, locate where the documentation
+gets installed inside '$build_dir', and append this directory to '$DOC_DIRS'.
+Remember this step should be done inside a hook function, and use the append
+redirection operator ('>>') to avoid file overwrites.

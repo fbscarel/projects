@@ -7,8 +7,7 @@
 ## get configuration value $1 from file $2, with variable delimiter support
 #
 function getparam() {
-  local delim="$( egrep "^$1" $2 | sed "s/^$1//" )"
-  echo "$( egrep "^$1" $2 | sed "s/.*${delim:0:2} *\(.*\)/\1/" )"
+  egrep "^$1" $2 | sed "s/^$1 *. *['\"]\?\([^'\"]*\).*/\1/"
 }
 
 

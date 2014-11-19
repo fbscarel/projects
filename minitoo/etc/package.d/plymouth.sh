@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function pkg_plymouth_depends() {
-  depends="udev"
+  depends="udev xorg gtk"
 }
 
 function pkg_plymouth() {
