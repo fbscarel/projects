@@ -45,7 +45,46 @@ function package_install() {
       pkg_${function}
       if [ -n "$packages" ]; then
         check_verb "[*] Installing package $function ..."
-        USE="$USE" emerge -bkq --quiet-build --binpkg-respect-use=y --config-root=$config_root --root=$1 $packages
+        
+        local instok=0
+        local amask=0
+        local emerge_opts="-bkq --quiet-build --binpkg-respect-use=y"
+        local emerge_config="--config-root=$config_root"
+        local emerge_target="--root=$1"
+
+        while [ $instok -eq 0 ]; do
+
+          USE="$USE" emerge $emerge_opts $emerge_config $emerge_target $packages
+          if [ "$?" -eq 0 ]; then
+            instok=1
+
+          else
+            
+            # try --autounmask-write, in case we have package masking issues
+            if [ $amask -eq 0 ]; then
+              emerge_opts="$emerge_opts --autounmask-write"
+              amask=1
+            
+            # --autounmask-write returns 1, so we have to re-loop removing autounmask
+            elif [ $amask -eq 1 ]; then
+              emerge_opts="${emerge_opts% --autounmask-write}"
+              amask=2
+            
+            # autounmask didn't work, error out
+            else
+              echo "[!] Error installing package $function ."
+              echo "[!] Check emerge output above for the detailed error report."
+              echo
+              if check_yes "[*] Continue program execution? (y/n) "; then
+                exit 1
+              elif check_yes "[*] Run hooks for package $function, despite installation errors? (y/n) "; then
+                return
+              else
+                break
+              fi
+            fi
+          fi
+        done
       fi
     fi
 
@@ -86,7 +125,7 @@ function package_tsort() {
 
       else
         # check if the dependency list only contains valid packages
-        check_packages "$deplist" "$function"
+        package_check "$deplist" "$function"
 
         # recursively resolve dependency list and write graph edges to file
         for dep in $deplist; do

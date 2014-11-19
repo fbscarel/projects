@@ -26,6 +26,14 @@ DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel shadow sysvin
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+## treat SIGINT interrupts
+#
+function sigint() {
+  echo "[!] Detected SIGINT from user. Terminating abruptly."
+  exit 1
+}
+
+
 ## parse configuration file for parameters
 #
 function conf_parse() {
@@ -178,8 +186,11 @@ function usage() {
 
 # - - -  main()  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# trap CTRL-C to avoid subprocesses getting out of control
+trap sigint SIGINT
+
 # load libraries
-for lib in $( ls $LIB_DIR ); do . $lib; done
+for lib in $( ls $LIB_DIR/* ); do . $lib; done
 
 # check for parameters
 while getopts "b:c:d:f:k:l:p:hsvy" opt; do
