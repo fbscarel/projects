@@ -265,7 +265,7 @@ echo "[*] minitoo-$VERSION: Starting operation. Invoke with '-h' for detailed he
 # if $device is set, prompt user, format and mount target device
 if [ -n "$device" ]; then
   if check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "; then exit_generic; fi
-#  disk_prep $device $build_dir
+  disk_prep $device $build_dir
 else
   if check_yes "[*] No device set. Installation will be done directly to $build_dir . Continue? (y/n) "; then exit_generic; fi
 fi
@@ -276,7 +276,7 @@ package_order "$install_packages"
 
 # go through ordered package list, install each one
 check_verb "[*] Installing packages and dependencies on $build_dir ..."
-#package_install $build_dir $conf_dir "$install_packages"
+package_install $build_dir $conf_dir "$install_packages"
 
 # copy over '$deploy_dir' contents to '$build_dir'
 check_verb "[*] Syncing content between $deploy_dir and $build_dir ..."
