@@ -46,3 +46,27 @@ function exit_generic() {
   echo "[!] Terminating due to user input."
   exit 1
 }
+
+
+## show options $1, $2, $3... to user, output selection
+## question to ask is on last parameter
+#
+function check_opts() {
+  nopts=$( expr $# - 1 )
+
+  for (( i=1 ; i<=$nopts ; i++ )); do
+    echo "     [$i] $1"
+    shift
+  done
+
+  while true; do
+    echo -n "$1"
+    read opt
+
+    if [[ ! $opt =~ ^-?[0-9]+$ ]] || [ $opt -lt 1 ] || [ $opt -gt $nopts ]; then
+      echo "[!] Invalid option, pleasy type an integer between 1 and $nopts."
+    else
+      return $opt
+    fi
+  done
+}

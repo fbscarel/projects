@@ -1,5 +1,3 @@
-opt to choose shell (busybox sh / bash)
-opt to clear python .pyc .pyo files
 opt to generate initramfs using dracut
 
  - Support package versioning
