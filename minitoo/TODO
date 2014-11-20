@@ -1,4 +1,5 @@
 opt to generate initramfs using dracut
+opt to enable daemons on boot
 
  - Support package versioning
  - Detect packages installed previously and avoid reinstall

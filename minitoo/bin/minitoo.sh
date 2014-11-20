@@ -10,10 +10,13 @@ VERSION="1.0.0"
 LIB_DIR="$MINITOO_HOME/lib"
 VAR_DIR="$MINITOO_HOME/var"
 TMP_DIR="$MINITOO_HOME/var/tmp"
-DOC_DIRS="$TMP_DIR/.doc_dirs"
-LOCALE_DIRS="$TMP_DIR/.locale_dirs"
 MINITOO_CONF="minitoo.conf"
 PACKAGE_DIR="package.d"
+
+## cross-module temporary files
+#
+DOC_DIRS="$TMP_DIR/.doc_dirs"
+LOCALE_DIRS="$TMP_DIR/.locale_dirs"
 
 ## assumed defaults, if unspecified
 #
