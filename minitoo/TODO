@@ -1,5 +1,8 @@
-opt to generate initramfs using dracut
 opt to enable daemons on boot
+opt to set root pwd on install finish
+make @base keyword for base system, and/or make +package opt to only add to base without retyping everything
+do NOT set autologin via code, do via deploydir
+customize bootloader depending on initramfs existence? get UUIDs automatically?
 
- - Support package versioning
- - Detect packages installed previously and avoid reinstall
+ - Support package versioning (really?)
+ - Detect packages installed previously and avoid reinstall (hard to do, have to recheck compile opts)

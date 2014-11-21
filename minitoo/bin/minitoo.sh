@@ -17,6 +17,7 @@ PACKAGE_DIR="package.d"
 #
 DOC_DIRS="$TMP_DIR/.doc_dirs"
 LOCALE_DIRS="$TMP_DIR/.locale_dirs"
+DRACUT_MODULES="$TMP_DIR/.dracut_modules"
 
 ## assumed defaults, if unspecified
 #
@@ -258,7 +259,7 @@ fi
 [ -n "$locales" ] && locale_parse "$locales"
 
 # remove tempfiles prior to package installation
-rm -f $DOC_DIRS $LOCALE_DIRS 2> /dev/null
+rm -f $DOC_DIRS $LOCALE_DIRS $DRACUT_MODULES 2> /dev/null
 
 echo "[*] minitoo-$VERSION: Starting operation. Invoke with '-h' for detailed help."
 

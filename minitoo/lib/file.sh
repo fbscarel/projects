@@ -45,7 +45,7 @@ function check_blockdev() {
 }
 
 
-## check if supplied binary files exist, bail if they don't
+## check if supplied binary files exist, return as appropriate
 #
 function check_binaryexist() {
   # tricky pass-by-name to get array as parameter, check
@@ -54,10 +54,9 @@ function check_binaryexist() {
   local a=("${!n}")
   for file in "${a[@]}"; do
     local fpath=$( which $file 2> /dev/null )
-    [ ! -z "$fpath" ] && { echo $fpath; return 0; }
+    [ ! -z "$fpath" ] && return 0
   done
 
-  echo "[!] $file binary not found in \$PATH, terminating." > /dev/stdin
   return 1
 }
 

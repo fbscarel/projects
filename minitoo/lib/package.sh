@@ -13,6 +13,7 @@ function package_check() {
 
   for function in $1; do
     if ! check_function "pkg_${function}" &&
+       ! check_function "pkg_${function}_depends" &&
        ! check_function "pkg_${function}_hook"; then
       echo -n "[!] Unknown package $function"
       if [ -n "$2" ]; then

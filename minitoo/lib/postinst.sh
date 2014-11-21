@@ -8,16 +8,16 @@
 ## optionally set user default shells
 #
 function post_shell() {
-  [ -f "$build_dir/bin/bash" ]    && local bashok=1
-  [ -f "$build_dir/bin/busybox" ] && local busyboxok=1
+  [ -f "$build_dir/bin/bash" ]    && local bashok=1    || local bashok=0
+  [ -f "$build_dir/bin/busybox" ] && local busyboxok=1 || local busyboxok=0
 
-  if [ $bashok -eq 1 ] && [ $busyboxok -eq 1 ]; then
+  if [ "$bashok" -eq 1 ] && [ "$busyboxok" -eq 1 ]; then
     echo "[*] Found both /bin/bash and /bin/busybox on ${build_dir}."
     check_opts "/bin/bash" "/bin/busybox" "[*] Please choose a default shell: "
     [ $? -eq 1 ] && shell="/bin/bash" || shell="/bin/busybox"
-  elif [ $bashok -eq 1 ]; then
+  elif [ "$bashok" -eq 1 ]; then
     shell="/bin/bash"
-  elif [ $busyboxok -eq 1 ]; then
+  elif [ "$busyboxok" -eq 1 ]; then
     shell="/bin/busybox"
   else
     echo "[!] No standard shell found on $build_dir/bin."
@@ -43,13 +43,6 @@ function post_shell() {
 ##
 #
 function post_user() {
-  return
-}
-
-
-##
-#
-function post_tty() {
   return
 }
 

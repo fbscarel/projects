@@ -114,6 +114,105 @@ it's supposed to install X _BEFORE_ installing Y. Your USE flags are correctly
 parsed, and Portage pulls no additional dependencies. Success!
 
 
+Specifying custom actions on package dependencies
+-------------------------------------------------
+
+Sometimes, it's not enough to simply specify that a package has dependencies,
+and have them installed. It can also be necessary to customize some
+configuration options that will change how this dependency is installed, thus
+ultimately interfering on how our package will be installed at the end of the
+dependency chain.
+
+A good example of this behavior is the 'plymouth' package, used to generate
+splash screens during boot. As we can see from the line below, 'plymouth'
+depends on the 'initramfs' package:
+
+  function pkg_plymouth_depends() {
+    depends="initramfs udev"
+
+The 'initramfs' package is used to generate an initial RAM filesystem for the
+kernel to load, which in turn makes several kernel modules and drivers available
+pre-boot.  In the specific case of plymouth, an initramfs is necessary to
+contain the splash screen theme, as well as several graphical libraries to show
+the image during boot.
+
+The theme included in the initramfs is configured during the generation of the
+initramfs, not when plymouth gets installed. In fact, plymouth doesn't even need
+to be installed on the minimal system, but rather on the host system. Therefore,
+to have a minimal system with bootsplash, we need to:
+
+  1) Have plymouth installed in the host system
+  2) Tell Minitoo that the minimal system should have an initramfs
+  3) Include the 'plymouth' module inside the initramfs
+  4) Specify which theme will be used in the splash screen
+
+These are all actions that have to be taken before package installation (in
+fact, in this case there's no package installation at all). How can we solve
+this problem? Dependency functions.
+
+Dependency functions, much like hook functions (explained in the following
+section), are free-form Bash code that gets executed verbatim. Most of the time
+they're simply used to set the global variable "$depends", which indicates an
+installation order. They can, however, be used for much more sophisticated
+things, as shown below by the full code of the 'plymouth' package installation
+file:
+
+  1   function pkg_plymouth_depends() {
+  2     plymouth_bin=( plymouth plymouth-set-default-theme )
+  3
+  4     # check if plymouth is installed in the host system
+  5     if check_binaryexist $plymouth_bin; then
+  6       echo "[!] Plymouth doesn't seem to be installed in the host system."
+  7       echo "    Can't generate a plymouth-enabled initramfs."
+  8
+  9     else
+  10      depends="initramfs udev"
+  11
+  12      # enable the 'plymouth' module in dracut
+  13      echo "plymouth" >> $DRACUT_MODULES
+  14
+  15      # edit the '$plymouth_theme' variable below to optionally set plymouth
+  16      # theme to be used by 'dracut' during initramfs generation
+  17      local plymouth_theme=""
+  18
+  19      if [ ! -z "$plymouth_theme" ]; then
+  20        local plymouth_path="/usr/share/plymouth/themes/"
+  21
+  22        if [ ! -d "$plymouth_path/$plymouth_theme" ]; then
+  23          echo "[!] Invalid theme specified on plymouth package"
+  24          echo "    configuration. Using default theme instead."
+  25          return
+  26        else
+  27          plymouth-set-default-theme $plymouth_theme
+  28        fi
+  29      fi
+  30    fi
+  31  }
+
+It's a somewhat complex function, but bear with me. The first goal is to check
+if plymouth is installed in the host system; otherwise, we can't generate a
+bootsplash-enabled initramfs at all. The function "check_binaryexist" does that
+for us: it takes an array of strings as parameter (in this case, "plymouth" and
+"plymouth-set-default-theme"), and outputs '1' if they all exist in the current
+'$PATH', and '0' otherwise. This check is done on lines 2-7.
+
+Next, we must tell Minitoo about the need to generate an initramfs. We do that
+with the "depends" variable, as explained in the previous section, on line 10.
+
+Following, we must include the appropriate module inside the initramfs. Minitoo
+uses 'dracut' to generate initramfs images, so the global variable for that is
+named '$DRACUT_MODULES' (which is, actually, a file). Therefore, we simply
+append the 'plymouth' module to this file, as shown in line 13.
+
+Finally, we can select a theme for our splash screen. In the case of plymouth,
+all themes are stored inside the '/usr/share/plymouth/themes' directory. The
+user must edit the content of the '$plymouth_theme' variable, selecting one of
+the available themes; if no selection is made, we use the default one. This
+theme, of course, must actually exist inside the themes directory. If
+everything's OK, we set the theme selected by the user with the
+'plymouth-set-default-theme' command. This is all done on lines 17-29.
+
+
 Creating hook functions
 -----------------------
 
