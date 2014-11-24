@@ -1,4 +1,3 @@
-do NOT set autologin via code, do via deploydir
 customize bootloader depending on initramfs existence? get UUIDs automatically?
 
  - Support package versioning (really?)

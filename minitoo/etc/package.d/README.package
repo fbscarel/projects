@@ -57,7 +57,7 @@ The format is pretty simple:
 After creating the package instruction file, it's pretty simple to add it to
 the Minitoo build system. Add your function name (created on 'Line 3' on the
 example above), without the 'pkg_' prefix, to the package list given to the
-'-p' commandline option or the 'INSTALL_PACKAGES' configuration file parameter.
+'-p' commandline option or the 'PACKAGE_INSTALL' configuration file parameter.
 
 That's it! Your new package should now be built and installed without trouble.
 
@@ -250,27 +250,27 @@ global variables for that purpose.
 
 Here's a list of the most useful variables available to hook functions:
 
-  $build_dir:        directory where the minimal system is being installed, as
-                     set by the '-b' commandline option or the 'BUILD_DIR'
-                     configuration file parameter. You can chroot to this
-                     directory to execute 'native' calls, if needed.
+  $build_dir:       directory where the minimal system is being installed, as
+                    set by the '-b' commandline option or the 'BUILD_DIR'
+                    configuration file parameter. You can chroot to this
+                    directory to execute 'native' calls, if needed.
 
-  $conf_dir:         directory where configuration files reside.
+  $conf_dir:        directory where configuration files reside.
 
-  $device:           the block device that was formatted/mounted during disk
-                     preparation.
+  $device:          the block device that was formatted/mounted during disk
+                    preparation.
 
-  $deploy_dir:       directory that will be deployed after package
-                     installation. You may want to copy or refer to files that
-                     are contained in this directory even before deployment.
+  $deploy_dir:      directory that will be deployed after package
+                    installation. You may want to copy or refer to files that
+                    are contained in this directory even before deployment.
 
-  $install_packages: a space-separated list of packages that are being
-                     installed on the minimal system. You might have to parse
-                     this list in order to find a specific package.
+  $package_install: a space-separated list of packages that are being
+                    installed on the minimal system. You might have to parse
+                    this list in order to find a specific package.
 
-  $kver:             kernel version being compiled and installed.
+  $kver:            kernel version being compiled and installed.
 
-  $kconfig:          configuration file used to compile the kernel above.
+  $kconfig:         configuration file used to compile the kernel above.
 
 
 Besides variables, there's also a number of helpful functions that you may use:
