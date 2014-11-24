@@ -4,6 +4,20 @@
 ## file-related utility functions for all scripts in this package
 #
 
+## parse configuration file for parameters
+#
+function conf_parse() {
+  [ -z "$build_dir" ]        && build_dir="$( getparam BUILD_DIR $minitoo_conf )"
+  [ -z "$daemon_opts" ]      && daemon_opts="$( getparam DAEMON_OPTS $minitoo_conf )"
+  [ -z "$deploy_dir" ]       && deploy_dir="$( getparam DEPLOY_DIR $minitoo_conf )"
+  [ -z "$device" ]           && device="$( getparam DEVICE $minitoo_conf )"
+  [ -z "$install_packages" ] && install_packages="$( getparam INSTALL_PACKAGES $minitoo_conf )"
+  [ -z "$locales" ]          && locales="$( getparam LOCALES $minitoo_conf )"
+
+  return 0
+}
+
+
 ## get configuration value $1 from file $2, with variable delimiter support
 #
 function getparam() {

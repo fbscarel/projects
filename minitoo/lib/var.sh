@@ -70,3 +70,22 @@ function check_opts() {
     fi
   done
 }
+
+
+## treat SIGINT interrupts
+#
+function sigint() {
+  echo "[!] Detected SIGINT from user. Terminating abruptly."
+  exit 1
+}
+
+
+## parse kernel options passed via commandline
+#
+function kopts_parse() {
+  local IFS=" "
+
+  set -- $kernel_opts
+  kver="$1"
+  kconfig="$2"
+}
