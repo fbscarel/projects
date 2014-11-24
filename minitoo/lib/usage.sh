@@ -122,23 +122,33 @@ function usage() {
   echo "              minimal system. Can be set via configuration file."
   echo
   echo "  -p          Install PACKAGES on the minimal system. This option should be"
-  echo "              a space-separated list of packages to install, surrounded by"
-  echo "              double-quotes. The full list of packages available for"
-  echo "              installation can be found in the 'etc/package.d' directory. If"
-  echo "              unspecified, the following packages will be installed by"
-  echo "              default:"
+  echo "              a space-separated list of packages or package keywords to"
+  echo "              install, surrounded by double-quotes. Package keywords can be"
+  echo "              defined in the 'etc/minitoo.conf' configuration file, using the"
+  echo "              'PACKAGE_KEYWORDS' parameter. The full list of packages"
+  echo "              available for installation can be found in the 'etc/package.d'"
+  echo "              directory. If unspecified, the following keyword will be"
+  echo "              installed by default:"
+  echo
+  echo "                @base"
+  echo
+  echo "              This keyword defines the installation of the following"
+  echo "              packages:"
   echo
   echo "                baselayout busybox extlinux glibc kernel shadow sysvinit udev"
   echo
-  echo "              A subset of the packages above could be selected via"
-  echo "              commandline using the following example:"
+  echo "              Additional packages could be selected via commandline using the"
+  echo "              following example:"
   echo
-  echo "                -p \"baselayout busybox glibc kernel sysvinit\""
+  echo "                -p \"@base xorg xmisc fluxbox\""
   echo
-  echo "              WARNING: if you opt to skip crucial packages"
-  echo "              (for example, the kernel or an init system) your system could"
-  echo "              become unbootable. This parameter can be set via configuration"
-  echo "              file."
+  echo "              Conversely, you can install a subset of the base packages with:"
+  echo
+  echo "                -p \"busybox glibc kernel sysvinit\""
+  echo
+  echo "              WARNING: if you opt to skip crucial packages (for example, the"
+  echo "              kernel or an init system) your system could become unbootable."
+  echo "              This parameter can be set via configuration file."
   echo
   echo "  -s          Optimize for size. This option will trigger the removal of all"
   echo "              documentation directories (/usr/share/{doc,gtk-doc,info,man}),"

@@ -40,6 +40,20 @@ function post_shell() {
 }
 
 
+## ask user and set root password for minimal system
+## if '-y' is active, randomize and set password automatically
+#
+function post_rootpw() {
+  if check_yes "[*] Randomize and set root password automatically? (y/n) "; then
+    chroot $build_dir passwd root
+  else
+    local randpw="$( head /dev/urandom | tr -cd '[:alnum:]' | fold -w8 | head -n1 )"
+    echo "root:$randpw" | chroot $build_dir chpasswd
+    echo "[*] Set root password as '$randpw' . WRITE DOWN THIS INFORMATION FOR LATER USE."
+  fi
+}
+
+
 ##
 #
 function post_user() {
@@ -53,9 +67,9 @@ function post_install() {
   # set user shell
   post_shell
 
+  # set root password
+  post_rootpw
+
   # optionally create users
   #post_user
-
-  # set up autologin and reduce tty count
-  #post_tty
 }

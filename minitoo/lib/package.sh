@@ -8,7 +8,7 @@
 ## packages
 ## $2 may contain, optionally, the function where an error was found
 #
-function package_check() {
+function pkg_check() {
   local function=""
 
   for function in $1; do
@@ -31,7 +31,7 @@ function package_check() {
 ## install each of the packages contained in list $3 on target $1, using
 ## configuration parameters from directory $2
 #
-function package_install() {
+function pkg_install() {
   local config_root="$( echo $2 | sed 's\[/]*etc[/]*$\\' )"
   [ -z "$config_root" ] && config_root="."
 
@@ -105,7 +105,7 @@ function package_install() {
 ## package list while checking dependencies, a well-known method for sorting
 ## directed acyclic graphs (DAGs)
 #
-function package_tsort() {
+function pkg_tsort() {
   local function=""
   local deplist=""
   local dep=""
@@ -126,11 +126,11 @@ function package_tsort() {
 
       else
         # check if the dependency list only contains valid packages
-        package_check "$deplist" "$function"
+        pkg_check "$deplist" "$function"
 
         # recursively resolve dependency list and write graph edges to file
         for dep in $deplist; do
-          if ! grep "$dep" $pkgfile &> /dev/null ; then package_tsort "$dep"; fi
+          if ! grep "$dep" $pkgfile &> /dev/null ; then pkg_tsort "$dep"; fi
           echo "$dep $function" >> $pkgfile
         done
       fi
@@ -143,23 +143,23 @@ function package_tsort() {
 }
 
 
-## relay package list $1 to package_tsort() for recursive dependency resolution
+## relay package list $1 to pkg_tsort() for recursive dependency resolution
 ## and topological sorting; writes sorted list to global variable
-## $install_packages, space-separated
+## $package_install, space-separated
 #
-function package_order() {
-  pkgfile="$VAR_DIR/.pkg_order"
-  local tmpfile="$VAR_DIR/.tmp_order"
+function pkg_order() {
+  pkgfile="$TMP_DIR/.pkg_order"
+  local tmpfile="$TMP_DIR/.tmp_order"
 
   # ensure our pkg list file is empty, and exists
   rm -f $pkgfile ; touch $pkgfile
 
   # recursively resolve dependencies on package list
-  package_tsort "$1"
+  pkg_tsort "$1"
 
   # sort and write ordered package list, checking for loop errors
   if tsort $pkgfile > $tmpfile ; then
-    install_packages="$( cat $tmpfile | sed '/^PKG_NODEP/d' | paste -s -d' ')"
+    package_install="$( cat $tmpfile | sed '/^PKG_NODEP/d' | paste -s -d' ')"
   else
     echo "[!] There was an error while resolving package dependencies."
     echo "[!] Please review 'tsort' output above and check your package '_depends' functions."

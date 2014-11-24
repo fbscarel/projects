@@ -5,6 +5,6 @@ function pkg_shadow_depends() {
 }
 
 function pkg_shadow() {
-  USE="-audit"
+  USE="-audit -cracklib"
   packages="sys-apps/attr sys-apps/acl sys-apps/shadow"
 }

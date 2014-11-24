@@ -7,14 +7,41 @@
 ## parse configuration file for parameters
 #
 function conf_parse() {
-  [ -z "$build_dir" ]        && build_dir="$( getparam BUILD_DIR $minitoo_conf )"
-  [ -z "$daemon_opts" ]      && daemon_opts="$( getparam DAEMON_OPTS $minitoo_conf )"
-  [ -z "$deploy_dir" ]       && deploy_dir="$( getparam DEPLOY_DIR $minitoo_conf )"
-  [ -z "$device" ]           && device="$( getparam DEVICE $minitoo_conf )"
-  [ -z "$install_packages" ] && install_packages="$( getparam INSTALL_PACKAGES $minitoo_conf )"
-  [ -z "$locales" ]          && locales="$( getparam LOCALES $minitoo_conf )"
+  [ -z "$build_dir" ]       && build_dir="$( getparam BUILD_DIR $minitoo_conf )"
+  [ -z "$daemon_opts" ]     && daemon_opts="$( getparam DAEMON_OPTS $minitoo_conf )"
+  [ -z "$deploy_dir" ]      && deploy_dir="$( getparam DEPLOY_DIR $minitoo_conf )"
+  [ -z "$device" ]          && device="$( getparam DEVICE $minitoo_conf )"
+  [ -z "$package_install" ] && package_install="$( getparam PACKAGE_INSTALL $minitoo_conf )"
+  [ -z "$locales" ]         && locales="$( getparam LOCALES $minitoo_conf )"
 
   return 0
+}
+
+
+## process and dereference package keywords to globalvar '$package_install'
+#
+function keyword_parse() {
+  local expkw=""
+  local pkg_tmpfile="$TMP_DIR/.pkg_tmpfile"
+
+  echo "$KEYWORD_BASE" > $PACKAGE_KEYWORDS
+  getparam PACKAGE_KEYWORDS $minitoo_conf >> $PACKAGE_KEYWORDS
+
+  # remove duplicate keywords, keep only first declaration
+  awk '!_[$1]++' FS=' ' $PACKAGE_KEYWORDS > $pkg_tmpfile
+  mv $pkg_tmpfile $PACKAGE_KEYWORDS
+
+  # expand keywords in $package_install
+  for pkg in $package_install; do
+    if [[ $pkg =~ @.* ]]; then
+      expkw="$expkw $( getparam $pkg $PACKAGE_KEYWORDS )"
+    else
+      expkw="$expkw $pkg"
+    fi
+  done
+
+  # remove duplicate packages, sort list alphabetically
+  echo "$expkw" | sed 's/ /\n/g' | sort | uniq | paste -s -d' '
 }
 
 

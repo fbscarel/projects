@@ -18,13 +18,18 @@ PACKAGE_DIR="package.d"
 DOC_DIRS="$TMP_DIR/.doc_dirs"
 LOCALE_DIRS="$TMP_DIR/.locale_dirs"
 DRACUT_MODULES="$TMP_DIR/.dracut_modules"
+PACKAGE_KEYWORDS="$TMP_DIR/.pkg_keywords"
 
 ## assumed defaults, if unspecified
 #
 DEFAULT_CONF_DIR="$MINITOO_HOME/etc"
 DEFAULT_BUILD_DIR="$MINITOO_HOME/var/build"
 DEFAULT_DEPLOY_DIR="$MINITOO_HOME/var/deploy"
-DEFAULT_INSTALL_PACKAGES="baselayout busybox extlinux glibc kernel shadow sysvinit udev"
+DEFAULT_PACKAGE_INSTALL="@base"
+
+## default package keywords
+#
+KEYWORD_BASE="@base = baselayout busybox extlinux glibc kernel shadow sysvinit udev"
 
 
 # - - -  main()  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +52,7 @@ while getopts "b:c:d:D:f:k:l:p:hsvy" opt; do
         f) deploy_dir=${OPTARG} ;;
         k) kernel_opts=${OPTARG} ;;
         l) locales=${OPTARG} ;;
-        p) install_packages=${OPTARG} ;;
+        p) package_install=${OPTARG} ;;
         s) optsize=true ;;
         v) verbose=true ;;
         y) allyes=true ;;
@@ -75,9 +80,12 @@ for pkg in $( ls $package_dir/*.sh ); do . $pkg; done
 [ -f "$minitoo_conf" ] && conf_parse || echo "[!] Configuration file $minitoo_conf not found, continuing..."
 
 # if still unset, give default values to non-mandatory parameters
-[ -z "$build_dir" ]        && build_dir="$DEFAULT_BUILD_DIR"
-[ -z "$deploy_dir" ]       && deploy_dir="$DEFAULT_DEPLOY_DIR"
-[ -z "$install_packages" ] && install_packages="$DEFAULT_INSTALL_PACKAGES"
+[ -z "$build_dir" ]       && build_dir="$DEFAULT_BUILD_DIR"
+[ -z "$deploy_dir" ]      && deploy_dir="$DEFAULT_DEPLOY_DIR"
+[ -z "$package_install" ] && package_install="$DEFAULT_PACKAGE_INSTALL"
+
+# parse package keywords, expand '$package_install' variable
+package_install="$( keyword_parse )"
 
 # check if supplied directories exist
 check_dir $build_dir
@@ -87,7 +95,7 @@ check_dir $deploy_dir
 [ -n "$device" ] && check_blockdev $device
 
 # check if packages set for installation are registered in the program
-package_check "$install_packages"
+pkg_check "$package_install"
 
 # parse kernel options and check for validity
 if [ -n "$kernel_opts" ]; then
@@ -114,35 +122,31 @@ fi
 
 # recursively resolve dependencies between packages, return ordered list
 check_verb "[*] Processing package list..."
-package_order "$install_packages"
+pkg_order "$package_install"
 
 # go through ordered package list, install each one
 check_verb "[*] Installing packages and dependencies on $build_dir ..."
-package_install $build_dir $conf_dir "$install_packages"
+pkg_install $build_dir $conf_dir "$package_install"
 
-# copy over '$deploy_dir' contents to '$build_dir'
 check_verb "[*] Syncing content between $deploy_dir and $build_dir ..."
 rsync -a $deploy_dir/ $build_dir/
 
-# remove unwanted locales, according to user configuration
-if [ -n "$locales" ]; then
-  check_verb "[*] Removing unwanted locales..."
-  locale_remove "$locales"
-fi
-
-# perform size optimizations 
-if [ "$optsize" == true ]; then
-  check_verb "[*] Performing size optimizations..."
-  size_opts
-fi
-
-# perform post-installation configuration
 check_verb "[*] Performing post-installation configuration..."
 post_install
 
 if [ -n "$daemon_opts" ]; then
   check_verb "[*] Configuring daemon startup options..."
   daemon_config
+fi
+
+if [ -n "$locales" ]; then
+  check_verb "[*] Removing unwanted locales..."
+  locale_remove "$locales"
+fi
+
+if [ "$optsize" == true ]; then
+  check_verb "[*] Performing size optimizations..."
+  size_opts
 fi
 
 check_verb "[*] Finished. No error reported."
