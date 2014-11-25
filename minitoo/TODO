@@ -1,3 +1,3 @@
- - Support package versioning (really?)
- - Support OR dependencies (i.e. depends on package X or package Y, ask for selection?)
- - Detect packages installed previously and avoid reinstall (hard to do, have to recheck compile opts)
+- Support package versioning (really?)
+- Support OR dependencies (i.e. depends on package X or package Y, ask for selection?)
+- Detect packages installed previously and avoid reinstall (hard to do, have to recheck compile opts)

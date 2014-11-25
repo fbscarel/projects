@@ -26,5 +26,5 @@ function pkg_oracle-jre_hook() {
   fi
 
   # append Oracle JRE locale directory to globalvar $LOCALE_DIRS
-  echo "/opt/jre1.7.0_67/lib/locale" >> $LOCALE_DIRS
+  echo "$( find $opt_dir -name locale -type d | sed "s:$build_dir::" )" >> $LOCALE_DIRS
 }
