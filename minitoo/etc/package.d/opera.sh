@@ -5,7 +5,7 @@ function pkg_opera_depends() {
 }
 
 function pkg_opera_hook() {
-  local opera_file_path="/root/Downloads/opera-12.16-1860.x86_64.linux.tar.xz"
+  local opera_file_path=""
 
   if [ -z "$opera_file_path" ]; then
     echo "[!] No Opera package specified on install file $conf_dir/package.d/opera.sh ."

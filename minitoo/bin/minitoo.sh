@@ -107,12 +107,12 @@ fi
 # check locale list for validity
 [ -n "$locales" ] && locale_parse "$locales"
 
+echo "[*] minitoo-$VERSION: Starting operation. Invoke with '-h' for detailed help."
+[ "$verbose" == true ] && conf_show
+
 # remove tempfiles prior to package installation
 rm -f $DOC_DIRS $LOCALE_DIRS $DRACUT_MODULES 2> /dev/null
 
-echo "[*] minitoo-$VERSION: Starting operation. Invoke with '-h' for detailed help."
-
-# if $device is set, prompt user, format and mount target device
 if [ -n "$device" ]; then
   if check_yes "[*] We're now going to format device $device . Go ahead? (y/n) "; then exit_generic; fi
   disk_prep $device $build_dir
@@ -124,7 +124,6 @@ fi
 check_verb "[*] Processing package list..."
 pkg_order "$package_install"
 
-# go through ordered package list, install each one
 check_verb "[*] Installing packages and dependencies on $build_dir ..."
 pkg_install $build_dir $conf_dir "$package_install"
 
@@ -133,6 +132,9 @@ rsync -a $deploy_dir/ $build_dir/
 
 check_verb "[*] Performing post-installation configuration..."
 post_install
+
+check_verb "[*] Running package post-install hooks..."
+pkg_post "$package_install"
 
 if [ -n "$daemon_opts" ]; then
   check_verb "[*] Configuring daemon startup options..."

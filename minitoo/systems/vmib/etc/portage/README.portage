@@ -1,0 +1,23 @@
+This is the README file for the 'etc/portage' directory of the Minitoo build
+system.
+
+This directory contains the configuration files used by Portage when
+installing packages to the root filesystem of systems created by Minitoo. We
+use the configuration parameter '--config-root' passed to 'emerge' to achieve
+this goal.
+
+You should edit the files in this directory to customize your minimal system
+before building and installing. Take extra care reviewing the global USE flags
+configured on 'etc/portage/make.conf', alongside compile options and other
+important parameters.
+
+Another VERY IMPORTANT thing to do before running Minitoo is configuring your
+'make.profile' symlink. This file should be a symlink to one of the profiles
+in the '/usr/portage/profiles' directory in your machine. When building
+a minimal system, this profile will usually be something with little
+dependency requirements, such as 'default/linux/amd64/VERSION' or
+'hardened/linux/amd64'. Use the command:
+
+  eselect profile list
+
+To view the complete list of available profiles.

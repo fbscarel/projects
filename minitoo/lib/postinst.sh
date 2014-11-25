@@ -13,8 +13,14 @@ function post_shell() {
 
   if [ "$bashok" -eq 1 ] && [ "$busyboxok" -eq 1 ]; then
     echo "[*] Found both /bin/bash and /bin/busybox on ${build_dir}."
-    check_opts "/bin/bash" "/bin/busybox" "[*] Please choose a default shell: "
-    [ $? -eq 1 ] && shell="/bin/bash" || shell="/bin/busybox"
+    if check_yes "[*] Set default shell automatically? (y/n) "; then
+      echo "[*] If you have not installed coreutils, findutils, grep and other system"
+      echo "    utilities you HAVE TO select busybox here, or you'll run into problems."
+      check_opts "/bin/bash" "/bin/busybox" "[*] Please choose a default shell: "
+      [ $? -eq 1 ] && shell="/bin/bash" || shell="/bin/busybox"
+    else
+      shell="/bin/busybox"
+    fi
   elif [ "$bashok" -eq 1 ]; then
     shell="/bin/bash"
   elif [ "$busyboxok" -eq 1 ]; then
@@ -44,12 +50,14 @@ function post_shell() {
 ## if '-y' is active, randomize and set password automatically
 #
 function post_rootpw() {
-  if check_yes "[*] Randomize and set root password automatically? (y/n) "; then
-    chroot $build_dir passwd root
-  else
-    local randpw="$( head /dev/urandom | tr -cd '[:alnum:]' | fold -w8 | head -n1 )"
-    echo "root:$randpw" | chroot $build_dir chpasswd
-    echo "[*] Set root password as '$randpw' . WRITE DOWN THIS INFORMATION FOR LATER USE."
+  if [ -f "$build_dir/etc/passwd" ]; then
+    if check_yes "[*] Randomize and set root password automatically? (y/n) "; then
+      chroot $build_dir passwd root
+    else
+      local randpw="$( head /dev/urandom | tr -cd '[:alnum:]' | fold -w8 | head -n1 )"
+      echo "root:$randpw" | chroot $build_dir chpasswd
+      echo "[*] Set root password as '$randpw' . WRITE DOWN THIS INFORMATION FOR LATER USE."
+    fi
   fi
 }
 

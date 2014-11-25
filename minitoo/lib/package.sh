@@ -166,3 +166,15 @@ function pkg_order() {
     exit 1
   fi
 }
+
+
+## run package post-install functions
+#
+function pkg_post() {
+  for function in $1; do
+    if check_function "pkg_${function}_post"; then
+      check_verb "[*] Running post-install hooks for package ${function}..."
+      pkg_${function}_post
+    fi
+  done
+}

@@ -49,19 +49,23 @@ function daemon_set() {
       echo "    Please check your daemon list. We're skipping this one."
 
     else
-      # if not using custom runlevel, use default
-      if [ -z "$2" ]; then
-        local rl="default"
-      
-      else
-        local rl="$2"
+      if [ "$action" == "add" ]; then
+        if [ -z "$2" ]; then
+          local rl="default"
+        else
+          local rl="$2"
 
-        # check if this is a valid runlevel
-        if ! grep "$rl" $runlevels &> /dev/null; then
-          echo "[!] Invalid runlevel $rl specified on atom $1@$rl ."
-          echo "    Can't act on daemon. We're skipping this one."
-          continue
+          # check if this is a valid runlevel
+          if ! grep "$rl" $runlevels &> /dev/null; then
+            echo "[!] Invalid runlevel $rl specified on atom $1@$rl ."
+            echo "    Can't act on daemon. We're skipping this one."
+            continue
+          fi
         fi
+
+      # if running 'del', autodetect runlevel for this service
+      else
+        rl="$( find $build_dir/etc/runlevels/ -name $1 | awk -F/ '{print $(NF-1)}' )"
       fi
 
       # add/delete daemon from runlevel

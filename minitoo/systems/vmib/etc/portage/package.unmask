@@ -1,0 +1,4 @@
+# required by app-emulation/virtualbox-guest-additions (argument)
+# /usr/portage/profiles/hardened/linux/amd64/no-multilib/package.mask:
+# Mirror profile/amd64/no-multilib/package.mask
+=app-emulation/virtualbox-guest-additions-4.2.24
