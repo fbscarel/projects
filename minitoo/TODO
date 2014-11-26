@@ -6,3 +6,5 @@ This a simple to-do list of features that are currently unimplemented:
     selection?)
   - Detect packages installed previously and avoid reinstall (hard to do, have
     to recheck compile opts)
+  - Add support to different output formats (filesystem, disk partition, ISO
+    image, virtual machine file, etc.)
