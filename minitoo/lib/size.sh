@@ -24,6 +24,14 @@ function py_remove() {
 }
 
 
+## remove Portage install information
+#
+function portage_remove() {
+  rm -rf $build_dir/var/db/Makefile
+  rm -rf $build_dir/var/db/pkg
+}
+
+
 ## compress dirs using SquashFS, making them read-only after mounting
 ## add to minimal system '/etc/fstab'
 #
@@ -37,6 +45,7 @@ function squash_dirs() {
     else
       mksquashfs $build_dir/$dir $build_dir/${dir}.sqsh -comp xz
       rm -rf $build_dir/$dir 2> /dev/null
+      mkdir -p $build_dir/$dir 2> /dev/null
       echo "/${dir}.sqsh /$dir squashfs $mountopts 0 0" >> $build_dir/etc/fstab
     fi
   done
@@ -51,6 +60,9 @@ function size_opts() {
 
   # remove Python precompiled object files
   py_remove
+
+  # remove Portage install information
+  portage_remove
 
   # compress dirs using SquashFS
   squash_dirs

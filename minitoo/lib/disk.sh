@@ -22,6 +22,8 @@ function disk_prep() {
     fi
   done
 
+  check_verb "[*] Formatting and preparing disk $1 ..."
+
   # script fdisk to:
   #   1) create new partition table
   #   2) create one partition spanning the whole disk
