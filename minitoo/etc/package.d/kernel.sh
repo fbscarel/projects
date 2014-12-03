@@ -10,10 +10,10 @@ function pkg_kernel_hook() {
 
   # set defaults if not specified
   if [ -z "$kver" ]; then
-   local kpath="/usr/src/linux"
+   kpath="/usr/src/linux"
    kver="$( readlink -f $kpath | sed 's:.*/linux-\([^/]*\)$:\1:' )"
   else
-   local kpath="/usr/src/linux-$kver"
+   kpath="/usr/src/linux-$kver"
   fi
 
   [ -z "$kconfig" ] && local kconfig="$kpath/.config"

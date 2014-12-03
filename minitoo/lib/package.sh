@@ -55,7 +55,7 @@ function pkg_install() {
 
         while [ $instok -eq 0 ]; do
 
-          USE="$USE" emerge $emerge_opts $emerge_config $emerge_target $packages
+          USE="$USE" KERNEL_DIR="$kpath" emerge $emerge_opts $emerge_config $emerge_target $packages
           if [ "$?" -eq 0 ]; then
             instok=1
 
