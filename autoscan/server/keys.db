@@ -1,0 +1,14 @@
+## This is a file to hold client public keys timestamp information.
+## Expired keys can be cleaned up using the 'cleankeys.sh' cron script under
+## the 'cron/' folder. Consider running this script daily to keep client keys
+## under control.
+##
+## Syntax: TIMESTAMP KEY
+##
+## TIMESTAMP is in Unix epoch format. If you want to have a key ignored (and,
+## as a consequence, never expiring), simply swap its TIMESTAMP with an
+## asterisk ('*'), for example:
+##
+## * ssh-rsa AAAAB3Nz[...]BB7MHw== user@host
+#
+

@@ -1,0 +1,22 @@
+## local config files and dirs
+#
+client/exe/
+client/fcaj/*/fca.conf
+client/pscp/cli/*_rsa
+client/pscp/cli/pscp.bat
+
+
+## files generated through compilation
+#
+*.a
+*.o
+.deps/
+aclocal.m4
+autom4te.cache/
+config.h
+config.log
+config.status
+Makefile
+output.?
+traces.?
+uxconfig.h

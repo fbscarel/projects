@@ -1,0 +1,56 @@
+AutoScan has been tested with a number of UNIX-like operating systems to ensure
+maximum compatibility. Specifically, the software has been run under Linux x64,
+Linux x32, OpenBSD and FreeBSD, and there's no reason to assume it wouldn't work
+in other UNIX-like environments. To successfully operate the software
+server-side, however, there are a number of dependencies and considerations that
+have to be followed, as described in this file.
+
+When running AutoScan on a Linux x64 host, everything should Just Work (tm).
+Precompiled versions of extra binaries are provided, so no compilation is
+needed. Simply follow the instructions contained in the README file.
+
+
+* Running on other UNIX-like systems
+
+If running on a non-Linux x64 environment (Linux x32, *BSD, Solaris, etc.), the
+precompiled binaries will not work. Go into the 'extra' directory and follow the
+instructions outlined below for your operating system.
+
+To recompile the software, you will need the following:
+
+  - gcc
+  - GNU Autoconf
+  - GNU Automake
+
+On FreeBSD, make sure you also have the "devel/pkgconf" package installed.
+
+Additional software could be needed depending on your specific environment. Pay
+close attention to the output from 'configure' to try and solve any problems.
+
+Instructions for osslsigncode:
+
+  - All: simply run 'configure' and 'make'.
+  - OpenBSD: run 'configure' as usual. Pass the variables AUTOCONF_VERSION and
+      AUTOMAKE_VERSION to the 'make' command (consult `pkg_info` for version
+      information).
+
+Instructions for putty-src/unix:
+
+  - All: run 'configure' with the flag '--without-gtk' to remove GTK libraries
+      from the completed build, which reduces build time significantly. Run
+      'make' afterwards.
+
+
+* Other dependencies:
+
+Aside from the bundled source code/binaries, AutoScan depends on a number of
+external software to operate correctly. Make sure you have the following
+binaries on your $PATH before running the program:
+
+  - GNU bash, version 3.2+
+  - Python interpreter, version 2.4+
+  - expect (from the Tcl/Tk toolkit)
+  - a modern OpenSSH 'sshd' implementation, preferably version 6.0+
+  - a modern 'nc' (netcat) implementation, supporting the '-n' and '-z' options
+  - '7z' or '7za' binaries for the 7-zip file archiver, version 9.20+
+  - any binary providing MD5 or SHA (various formats) checksum creation

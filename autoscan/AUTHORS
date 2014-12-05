@@ -1,0 +1,11 @@
+AutoScan is a client-server solution to automatically scan Windows OS
+computers for malware, malicious browser extensions, browser history and other
+verifications.
+
+This program was written by Sicoob Confederacao employees to help forensic
+analysis in clients that had issues with bank fraud. The list of authors
+follows:
+
+  Felipe Scarel <felipe.scarel@sicoob.com.br, fbscarel@gmail.com>
+  Paula Fernandes <paula.fernandes@sicoob.com.br, paulag6@gmail.com>
+  Leone Parise <leone.silva@sicoob.com.br, leone.parise@gmail.com>

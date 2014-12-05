@@ -1,0 +1,538 @@
+Copyright (C) 2014  Sicoob Confederacao
+
+          AutoScan, version 1.0.0
+
+This is top-level directory of the AutoScan program, a client-server solution
+to automatically scan Windows OS computers for malware, malicious browser
+extensions, browser history and other verifications, produce a package
+containing this information, and securely send the resulting files to a server
+for forensic analysis.
+
+The program was written by Sicoob Confederacao employees to help forensic
+analysis in clients that had issues with bank fraud. You can check the AUTHORS
+file in this directory to check out who we are. This file also contact details:
+we welcome any feature suggestions, bug reports and the general thank-you
+message, so don't be afraid to get in touch.
+
+AutoScan is BSD-licensed, which means you can pretty much do anything you want
+with the code, so as long as you give due credit. Check the LICENSE file in
+this directory for the fine print. 
+
+
+* Outline
+
+As mentioned above, the objective of the AutoScan program is to facilitate the
+scanning process of Windows OS computers.
+
+It is frequently necessary to communicate with clients and use remote login
+solutions in order to be able to investigate malware attacks and browser
+malfunction, which can be a time-consuming and error-prone process. We came up
+with AutoScan to solve most, if not all, of these problems.
+
+The basic idea is to produce an executable that will bundle all the programs
+and verifications that must be done client-side. This executable is then
+distributed to the client through a trusted channel, and executed on his/her
+machine. After all the checks are concluded, the program produces a package
+containing all the evidence and suspicious files, which is sent through a
+secure channel back to a server of our choosing. Finally, we access this server
+and retrieve the package, enabling further forensic analysis and investigation.
+
+
+* Security
+
+Since we'll be running code in machines that could potentially be infected with
+malware, a number of measures were taken to ensure AutoScan's operation
+adequately secure. These measures are described in this section.
+
+The first step in the process is getting the executable files to the client. In
+order to provide a trusted channel for client downloads, we recommend setting
+an HTTPS server to communicate with clients, preferably with a signed
+certificate. Clients should be wary of man-in-the-middle attacks in infected
+machines, so it's important to double-check the signing organization before
+downloading any executable. For this reason, using self-signed certificates is
+discouraged. It is possible, however, to add your certificate to the client's
+trusted root certificates if you can have physical access to the machine.
+
+Next up, we have to take in consideration the authenticity and integrity of
+downloaded code. To achieve these goals, AutoScan implements executable signing
+with the help of osslsigncode, an application that provides code signing
+capabilities similar to Microsoft's signcode and signtool applications. Of
+course, it's ideal to use a signed certificate for this purpose, using
+reasoning similar to the one presented in the previous paragraph. You can,
+nevertheless, use a self-signed certificate if a signed one is not available.
+
+AutoScan also suports MD5 (not recommended), SHA-1, SHA-224, SHA-256 SHA-384
+and SHA-512 checksums to complement code integrity verification. Simply
+distribute this checksum to your clients via an external, trusted channel, and
+they should be able to independently verify that the executable they just
+downloaded is the one they should be really running in their machines.
+
+After executing several checks and acquiring sufficient information about the
+client machine, AutoScan can send all that information back to a server of your
+choosing. At this time, SSH's scp (secure copy) is the only supported method to
+send files back, though implementing an alternative HTTPS method is in
+consideration. When using SSH, most of the concerns present in the downloading
+part of our analysis still apply: clients must be sure they're communicating
+with the intended server, and the server must repel any connections from
+clients that should not be sending files in the first place.
+
+To achieve these goals we use a two-way public/private key mechanism. That is,
+the clients only accept connections to a single server (which contains the
+private key that matches the public key bundled in the executable), and the
+server only accepts connection from pre-approved clients (the ones who have
+the corresponding private key that match the public keys registered in the
+server during executable generation).
+
+We opted to use the PuTTY scp client in Windows OS machines, and OpenBSD's
+OpenSSH server-side (usually Linux, though not necessarily). For increased
+compatibility between these two implementations, SSH key generation uses
+2048-bit RSA keys.
+
+This mostly concludes the security considerations section of this README. Of
+course, you must be wary of external factors that could pose an issue to the
+security model, such as taking care so as to not leak private keys in the wild,
+keep your server updated and locked down, etc. In resume, the security measures
+taken by program should not be considered sufficient; make sure security best
+practices are being followed all around to keep the service working optimally.
+
+
+* Basic usage
+
+This section focus in showing how to use AutoScan in a more direct,
+step-by-step approach. If you'd like to dive right in and see what this program
+can do for you, this is the right place to start.
+
+For this how-to, assume the following scenario: you want to scan several
+Windows machines under your supervision, and you also have a SSH/HTTPS server
+to work with. You've just downloaded and unpacked the AutoScan distribution and
+are now wandering what you should do next.
+
+The one-stop shop you're going to be using is the 'client/autoscan.sh' shell
+script, which automates most of the AutoScan program operation. The usage
+screen gives us a good starting idea on what to do:
+
+  Usage: autoscan.sh -s SSH_SERVER -u USER [-c CLIENT_HOSTNAME] [-p PORT]
+                [-t TARGET] [-z CHECKSUM] [-i CERT] [-k KEY] [-l PASSWORD] [-v]
+  Generate an executable file (.exe) to be run on clients for automated
+  scanning, report generation and uploading. Run this script at SSH_SERVER,
+  logged in as either root or USER, since we need write permissions to
+  ~USER/.ssh . Supports code signing and checksum.
+
+The usage screen also explains the available options in more detail, but we're
+gonna go through them in a more organized fashion is this how-to.
+
+As shown above, the first thing is to make sure you're running this script on
+the SSH server that will be targeted by clients. The reason for that is that
+we'll be creating and adding clients' public keys to the servers' trusted keys,
+in order to allow client login.
+
+Let's tackle SSH server configuration first. As a general guideline, you'll
+want the following parameters in you sshd.conf file:
+
+  - Port $NUMBER$
+      It can be a good idea to assign your server to a port different from the
+      default 22. This could alleviate brute force attacks from external
+      sources, and help your server keep a lower profile.
+  - PermitRootLogin no
+      Usually a good idea to be set to 'no'.
+  - PubkeyAuthentication yes
+      Must be set to 'yes' to allow public key authentication, which AutoScan
+      assumes as being enabled.
+  - AuthorizedKeysFile %h/.ssh/authorized_keys
+      Sets 'authorized_keys' file location to the '.ssh' directory inside user
+      home directory. This is the default, and AutoScan assumes this behavior.
+  - UseDNS no
+      The UseDNS parameter instructs sshd to look up the remote host name and
+      check that the resolved host name for the remote IP address maps back to
+      the same IP address. This can be a problem with clients that do not
+      resolve host names to IPs correctly. If facing delay during connection,
+      consider setting this option to 'no'.
+
+The rest of the default parameters are fine. Don't forget to reload your SSH
+server configuration.
+
+The next thing you should notice is that alongside 'autoscan.sh' there's also
+a 'autoscan.conf' file. Oftentimes it can be convenient to have a configuration
+file ready to go instead of typing a long string of commandline paramters. The
+configuration file is thoroughly commented, so it shouldn't be too difficult to
+find your way around. As a general rule of thumb, any parameter you can set via
+commandline can also be set via configuration file (except '-h' and '-v'). Keep
+in mind that commandline parameters take precedence over anything set via
+configuration file; use that to your advantage, setting up sensible defaults in
+configuration and overriding when necessary.
+
+For this how-to, let's assume we'll not be using the configuration file; all
+parameters will be set through commandline.
+
+autoscan.sh has two mandatory parameters, '-s' and '-u'.
+
+  '-s' should be set to the SSH server public IP, that is, the IP clients will
+  use to connect back to your server.
+
+  '-u' should be set to the username that the client will use to login back to
+  your SSH server and copy files. Evidently, this user must exist.
+
+Let's assume we're generating an executable for one of the Windows machines,
+owned by Bob. We create a user account on our server named bob, and the run
+autoscan.sh using 192.168.0.1 as server IP, since both machines are in the same
+subnet:
+
+  $ pwd
+  /opt/autoscan/client
+
+  $ ./autoscan.sh -s 192.168.0.1 -u bob -v
+  [*] autoscan.sh, version 1.0.0
+      Using the following configuration parameters:
+
+          SSH server IP: 192.168.0.1
+          SSH server port: 22
+          User login as: bob
+          Client hostname: host
+          Target directory: /home/bob
+          Checksum algorithm: sha512
+
+  [*] Client private key generated, written to
+      [ /opt/autoscan/client/pscp/cli/bob_host_rsa ].
+  [*] Client public key appended to
+      [ /home/bob/.ssh/authorized_keys ].
+  [*] Client public key registered to internal database
+      [ /opt/autoscan/server/keys.db ].
+  [*] BAT script generated, written to
+      [ /opt/autoscan/client/pscp/cli/pscp.bat ].
+  [*] Bundle packed, client executable written to
+      [ /opt/autoscan/client/exe/host_bob_autoscan.exe ].
+  [*] sha512 checksum written to
+      [ /opt/autoscan/client/exe/host_bob_autoscan.sha512 ].
+
+The script was ran with the '-v' option (verbose) to show what's going on in
+more detail. That's a lot of information, let's go through it one by one:
+
+  1) First, the script checks if there are any parameters set in configuration
+      file. Since we're using the default, there's nothing there.
+
+  2) Next, commandline parameters are read. SSH server is set to '192.168.0.1'
+      and user is set to 'bob'. User 'bob' must exist. Everything else is
+      default.
+
+  3) The program generates a public/private key pair for user 'bob'. The
+      private key is written to a directory that will be bundled inside the
+      executable.
+
+  4) The public key generated in step 3) is added to the 'authorized_keys' file
+      in the '.ssh' directory, inside user home directory. If the '.ssh'
+      directory does not exist, AutoScan will create it beforehand. This public
+      key is also added to an internal database kept by AutoScan,
+      'server/keys.db'. This database is used to check for expired client keys.
+      Check the 'Server maintenance' section for more details.
+
+  5) A batch (DOS-compatible) script is generated inside the directory that
+      will be bundled inside the executable. This script is used by the 'fca'
+      program to copy files to the server. More on the 'fca' program in a bit.
+      This script has instructions on how and where files will be copied, most
+      importantly the TARGET directory (set to '/home/bob' in our example, the
+      default), which is the directory to which files will be copied in the
+      server.
+
+  6) Finally, an executable is generated using the information gathered in the
+      previous steps. This executable is a 7-zip SFX (self-extracting
+      executable) file containing the necessary files to run in the client. A
+      checksum of this file is generated using the SHA-512 algorithm (if using
+      the default configuration) under the same directory the executable was
+      created.
+
+Great, we have our executable! Now, to get it to bob, we'll use the HTTPS
+server. You can use any server (Apache or nginx will do just fine): just copy
+the executable to the top-level directory (mind any existing 'index.html'
+files) and start the webserver.
+
+Assuming the file is available, Bob downloads and runs it. The 7-zip SFX will
+extract itself to a temporary directory and run the 'fca' program, which stands
+for "Forensic Client Analysis". This is a Java application that will run
+several tests and checks, and gather information about the client. Most
+importantly, this program will:
+
+  - Run the TrendMicro HijackThis program
+  - Analyze its output and copy startup files deemed suspicious to a quarantine
+    directory
+  - Run checks against browser extensions and history files
+  - Analyze output and copy any suspicious extensions
+  - Run any custom programs (user-configured)
+
+After these steps, a package containing all relevant information about the
+client computer will be created.
+
+'fca' then automatically calls the batch script created in step 5) above and
+sends this package back to the server, where you will be able to extract and
+analyze its contents. This upload operation is made using the PuTTY pscp
+program, connecting to your SSH server using the private key created in step 3)
+above. The package is copied to the TARGET directory in the server, as
+discussed in step 5).
+
+
+* Advanced usage
+
+We have used AutoScan with a very basic approach so far. Still using the "Basic
+Usage" scenario, let's assume you now want to scan a second machine owned by
+Bob, this time located at the Financial department. You have also changed your
+SSH server listening port to 12345, as the default 22 was generating too much
+unwanted traffic. Finally, you have created a '/var/forensic' directory to
+receive all incoming AutoScan packages from now on.
+
+Now, it is very clear that the commandline we used previously will not suffice
+this time around. Let's explore the following options to achieve the goals
+outlined above:
+
+  '-p' sets the SSH server listening port. The default is 22.
+
+  '-c' sets the client hostname. This is a string that is used to identify the
+  client computer and avoid filename collision.
+
+  '-t' sets the target directory. This is the directory, in the server
+  filesystem, to which clients will copy packages on uploads.
+
+Using the options above, the following commandline would be a good option to
+generate the desired executable:
+
+  $ pwd
+  /opt/autoscan/client
+
+  $ ./autoscan.sh -s 192.168.0.1 -p 12345 -u bob -c financial -t /var/forensic
+      -v
+  [*] autoscan.sh, version 1.0.0
+      Using the following configuration parameters:
+
+          SSH server IP: 192.168.0.1
+          SSH server port: 12345
+          User login as: bob
+          Client hostname: financial
+          Target directory: /var/forensic
+          Checksum algorithm: sha512
+
+  [*] Client private key generated, written to
+      [ /opt/autoscan/client/pscp/cli/bob_financial_rsa ].
+  [*] Client public key appended to
+      [ /home/bob/.ssh/authorized_keys ].
+  [*] Client public key registered to internal database
+      [ /opt/autoscan/server/keys.db ].
+  [*] BAT script generated, written to
+      [ /opt/autoscan/client/pscp/cli/pscp.bat ].
+  [*] Bundle packed, client executable written to
+      [ /opt/autoscan/client/exe/financial_bob_autoscan.exe ].
+  [*] sha512 checksum written to
+      [ /opt/autoscan/client/exe/financial_bob_autoscan.sha512 ].
+
+Everything is mostly similar to what was shown in the "Basic Usage" section,
+but there are a few key differences:
+
+  1) Bob's client will now connect to the server on port 12345, instead of the
+      default 22. If you change your SSH server port, you must use the '-p'
+      parameter to instruct clients to connect to the alternate port.
+
+  2) The client is now identified as 'financial', rather than the default
+      'host' string. This is important on two accounts, as it avoids filename
+      collision (which would result in the previously generated executable
+      getting overwritten) and it also helps identifying multiple clients.
+
+  3) The packages generated by 'fca' on Bob's computer will now be copied to
+      '/var/forensic', and not his home directory. This is useful is you want
+      to make a centralized repository for incoming packages for analysis.
+
+On the TARGET subject, notice that you can also use the client hostname as a
+wildcard for substitution, in addition to the username. So, similarly to
+copying files to '/home/bob' or '/home/alice' if you're using the 'bob' or
+'alice' usernames, you can alternatively create a 'financial' user account and
+copy all packages from users belonging to the Financial department to
+'/home/financial', for example. This is useful if you want to group forensic
+packages on a per-group basis, instead of the default per-user basis. The
+'autoscan.conf' file has more details on how to make this configuration.
+
+
+* Code signing
+
+So far, we've been assuming that our client machines are all in the confines of
+the same organization, where some level of trust can be assumed. This is rarely
+the case when we're talking about client machines out in the wild, especially
+ones that could be infected with malware or being remotely controlled. To
+ensure that clients are really executing the code they should be, one that has
+not been tampered in any way, AutoScan supports code signing and checksumming.
+
+For this example, assume your SSH/HTTPS server of the previous sections has
+been connected to a 172.16.0.0/24 VLAN that interconnects the head office of
+your organization to a branch office in a different state. For convenience,
+we'll assume the server IP in this VLAN is 172.16.0.1.
+
+A staff member from this branch office, Alice, has called your office and
+complained that her machine is sluggish and seems to be infected. Obviously, no
+security guarantees can be made in this scenario, so we must be careful. Asking
+the user to simply access our HTTPS server and download the executable, as
+we've been doing so far, could be a bad decision, as we don't know what
+malicious software is running in her machine.
+
+To aid our task of ensuring the executable Alice is going to run is exactly the
+one she should be, we're going to sign it. Assuming you have a signed
+certificate available, which we'll call "Sample" for simplicity, the following
+commandline seems appropriate:
+
+  $ pwd
+  /opt/autoscan/client
+
+  $ ./autoscan.sh -s 172.16.0.1 -u alice -i ./sign/certs/sample.crt
+      -k ./sign/private/sample.key -v
+  [*] autoscan.sh, version 1.0.0
+      Using the following configuration parameters:
+
+          SSH server IP: 172.16.0.1
+          SSH server port: 22
+          User login as: alice
+          Client hostname: host
+          Target directory: /home/alice
+          Checksum algorithm: sha512
+          Signing certificate: ./sign/certs/sample.crt
+          Signing private key: ./sign/private/sample.key
+
+  [*] Client private key generated, written to
+      [ /opt/autoscan/client/pscp/cli/alice_host_rsa ].
+  [*] Client public key appended to
+      [ /home/alice/.ssh/authorized_keys ].
+  [*] Client public key registered to internal database
+      [ /opt/autoscan/server/keys.db ].
+  [*] BAT script generated, written to
+      [ /opt/autoscan/client/pscp/cli/pscp.bat ].
+  [*] Bundle packed, client executable written to
+      [ /opt/autoscan/client/exe/host_alice_autoscan.exe ].
+  [*] sha512 checksum written to
+      [ /opt/autoscan/client/exe/host_alice_autoscan.sha512 ].
+  [*] Signing executable [ /opt/autoscan/client/exe/host_alice_autoscan.exe ]
+      with certificate [ ./sign/certs/sample.crt ]
+      and private key [ ./sign/private/sample.key ].
+  [*] Created signed executable
+      [ /opt/autoscan/client/exe/host_alice_autoscan_SIGNED.exe ].
+  [*] sha512 checksum written to
+      [ /opt/autoscan/client/exe/host_alice_autoscan_SIGNED.sha512 ].
+  [*] Removed unsigned source executable
+      [ /opt/autoscan/client/exe/host_alice_autoscan.exe ], and its checksum.
+
+Let's see what happened there:
+
+  1) Alice's client will connect to our server on the 172.16.0.1 IP, port 22,
+      login as user 'alice', her client hostname is identified as the default
+      string 'host', and files will be copied to '/home/alice'. This is pretty
+      much what we learned on the previous sections.
+
+  2) After the executable is generated as usual, a signing process is started.
+      The executable is signed using osslsigntool with the certificate passed
+      to the '-i' parameter and the private key passed to the '-k' parameter.
+      A checksum of this new executable is created using the configured digest
+      algorithm.
+
+  3) The signed executable is written to the 'client/exe/' directory, and the
+      original, unsigned, executable is deleted. Its checksum is also deleted.
+
+We the copy this executable to the HTTPS server and let Alice know that she is
+clear to download it. When checking the "Properties > Digital Signatures" tab
+of the file on her Windows OS, Alice will be able to see that the executable
+she just downloaded has been digitally signed by the organization. Considering
+the certificate being used is signed by a trusted root CA, Windows should
+display that the application is provided by a trusted source.
+
+The private key being used to sign an executable can be encrypted by a
+password. If that's the case, you should pass the '-l' option to autoscan.sh to
+inform the decryption password. This option is documented in the program usage
+screen and configuration file.
+
+When it comes to using a configuration file to store private key passwords, as
+noted in the configuration file by a rather large BEWARE sign, keeping your
+password in a plain text file is, in almost all cases, a VERY BAD idea. Use at
+your own risk.
+
+
+* Checksumming
+
+In addition to signing the executable, it is also possible (and advisable) to
+produce a checksum to ensure integrity. Checksums can be run against the
+executable file to ensure it was not altered in any way after its creation,
+ensuring the client is running legitimate code in his/her machine.
+
+AutoScan supports checksums via the '-z' option and the 'CHECKSUM'
+configuration file parameter. The following digest algorithms are supported:
+md5, sha1, sha224, sha256 sha384 and sha512. If no option is specified on
+either configuration file or command line, 'sha512' is used by default.
+
+In order to use checksums effectively, you should take into consideration how
+checksums will be distributed to clients. Considering the download channel
+between your HTTPS server and client machines cannot be trusted, it is
+obviously not a good idea to distribute the checksum via the same channel, as
+it could be tampered alongside the executable file. You could use an
+alternative method, such as signed/encrypted email, to distribute your
+checksums and instruct clients to check the downloaded file before execution.
+
+
+* Server maintenance
+
+Naturally, after operating AutoScan for a while you're bound to have a lot of
+client keys lying around, which can pose a security and maintenance problem. On
+one hand, every client that has ever received a generated executable can
+connect to your server and send files to their TARGET directory, even if their
+scanning period is long overdue. In addition to that, it's not good to have a
+bunch of obsolete keys littering up your users' 'authorized_keys' files.
+
+To help alleviate that problem, AutoScan provides the 'cleankeys.sh' script,
+under the 'server/cron/' directory. This is a script intended to be run using
+the 'cron' scheduling daemon, ideally on a daily basis. 
+
+The script itself is very simple: it receives one commandline parameter, DAYS,
+that specified how many days back we're keeping keys. It then consults the
+'keys.db' internal database, residing under the 'server/' directory, and checks
+for client public keys registered there. Any keys older than $DAYS days will be
+deleted both from the users' 'authorized_keys' file and from AutoScan's
+database.
+
+We recommend setting up this script under your cron jobs if you're using keys
+on a per-user or per-group basis. If you're using a fixed key strategy, there's
+no need to take this configuration step.
+
+
+* Extras
+
+AutoScan contains an assortment of helping software that is included in the
+top-level 'extra/' directory for convenience. We list the included software
+packages below:
+
+  - 7-zip 9.2.0 for Windows, standalone version
+  - 7-zip 9.2.0 extras
+  - PuTTY 0.63 binary distribution for Windows
+  - PuTTY 0.63 source code
+  - osslsigncode 1.7.1 source code
+  - Trend Micro HijackThis v2.0.5 Beta
+
+
+* Files in this directory
+
+  + AUTHORS
+      List of authors of this software, with contact information.
+
+  + client/
+      Directory containing all code and programs related to the client-side
+      operation of AutoScan.
+
+  + extra/
+      Directory containing an assortment of helping software included for
+      convenience. The software included is listed in the "Extras" section of
+      this document.
+
+  + LICENSE
+      AutoScan licensing information.
+
+  + PORTABILITY
+      Instructions and dependencies to run AutoScan in a non-Linux x64
+      environment.
+
+  + README
+      This file.
+
+  + server/
+      Directory containing helper scripts and programs to be run server-side to
+      maintain an AutoScan installation.
+
+  + TODO
+      List of unimplemented features that are planned for future versions.

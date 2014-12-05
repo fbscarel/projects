@@ -1,0 +1,4 @@
+This directory contains sample keys to be used for self-signing executables.
+
+  - 'sample.key' is a 1024-bit RSA key with no passphrase.
+  - 'sample_pass.key' is a 1024-bit RSA key with passphrase 'password'.

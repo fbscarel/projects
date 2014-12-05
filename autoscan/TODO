@@ -1,0 +1,32 @@
+This a simple to-do list of features that are currently unimplemented:
+
+autoscan.sh:
+
+  (DONE) - Checksum (md5, sha1, sha256, sha512) support
+  (DONE) - Sign executables with ACTUAL valid certificates (use the one from
+           Java applets)
+  (DONE) - User permission check to TARGET directory before executable creation
+  (DONE) - Implement expiring user public keys on SSH with configurable
+           intervals, make a cron script server-side cronjob check for root
+           status
+  (DONE) - Filename timestamping option on uploads to avoid collision
+  (DONE) - Generate program using Java language
+  (DONE) - Check for binary compatibily on compile targets before running
+  (DONE) - Reimplement user permission check in a portable fashion
+  (DONE) - Document portability targets and program dependencies
+         - Investigate FreeBSD compile issues
+
+fca:
+
+  (DONE) - Create window with a "I agree" checkbox explaining that the program
+           could access browsers history files, extensions and plugins
+         - Selective network disabling/enabling to only allow outbound
+           communications to the SSH server (use Windows firewall
+           configuration?)
+         - Explain better another things that the program could access or do in
+           the user's machine.
+         - Decide what text goes in "I agree" window.
+         - Document Java program
+  
+
+
