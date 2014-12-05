@@ -1,0 +1,7 @@
+# !/bin/sh
+#opera -fullscreen -k -kiosknormalscreen -nochangebuttons -nochangefullscreen -nocontextmenu -nodownload -nohotlist -nokeys -nomaillinks -nomenu -noprint -nosave -nosplash -resetonexit &
+fbsetbg /root/img/sicoob.jpg
+/root/.fluxbox/vboxclient &
+setxkbmap br -option &
+opera -fullscreen &
+exec fluxbox

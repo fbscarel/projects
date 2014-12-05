@@ -1,0 +1,10 @@
+This a simple to-do list of features that are currently unimplemented:
+
+  - Add binarychecks to everything before running to avoid missing
+  - Support package versioning (really?)
+  - Support OR dependencies (i.e. depends on package X or package Y, ask for
+    selection?)
+  - Detect packages installed previously and avoid reinstall (hard to do, have
+    to recheck compile opts)
+  - Add support to different output formats (filesystem, disk partition, ISO
+    image, virtual machine file, etc.)

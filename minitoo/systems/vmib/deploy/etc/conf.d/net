@@ -1,0 +1,2 @@
+config_eth0="dhcp"
+dhcpcd_eth0="-q"

@@ -1,0 +1,13 @@
+## Use this file to keep track of packages manually installed in your system.
+## This is _extremely_ useful to avoid the installation of unwanted (and
+## uneeded) dependencies in your minimal system.
+##
+## A good example is managing to install Python 2 without pulling incidental
+## dependencies like 'python-updater' and Python 3. To achieve that goal, you
+## could add the following line to this file:
+##
+##   app-admin/python-updater
+##
+## Of course, you can work around other dependencies using the same procedure.
+#
+app-admin/python-updater-0.11

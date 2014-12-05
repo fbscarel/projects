@@ -1,0 +1,16 @@
+Minitoo is an automatic build system to produce minimal systems from
+Gentoo-based distributions, using the Portage build infrastructure and assorted
+binaries. The system does not implicate that the user does not have to study
+and fully understand Portage, Gentoo and Linux systems in general; rather, it's
+intended for advanced users that want to automate the construction of systems
+that they have built manually, increasing productivity and reducing intervals
+between builds and tests.
+
+This program was written by Felipe Scarel to automate the build of minimal
+systems for specialized purposes, such as web servers, application-specific
+machines and custom-tailored distributions for ATM systems. The list of authors
+follows:
+
+  Felipe Scarel < info@fbscarel.com,
+                  fbscarel@gmail.com,
+                  felipe.scarel@sicoob.com.br >

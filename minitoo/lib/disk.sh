@@ -15,9 +15,14 @@ function disk_prep() {
         echo "[!] Can't continue, device is mounted. Terminating."
         exit 1
       fi
-      umount $part
+      if ! umount $part; then
+        echo "[!] Couldn't unmount partition $part . Check umount(8) output above. Terminating."
+        exit 1
+      fi
     fi
   done
+
+  check_verb "[*] Formatting and preparing disk $1 ..."
 
   # script fdisk to:
   #   1) create new partition table
