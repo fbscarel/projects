@@ -1,1 +1,123 @@
-placeholder text sample
+Copyright (C) 2014  Felipe Scarel
+
+          Minitoo, version 1.0.0
+
+This is top-level directory of the Minitoo program, an automated build system
+based on Gentoo's Portage package management system to generate fully
+customizable minimal systems, with special focus on reduced size and increased
+security.
+
+The program was written by Felipe Scarel to provide an automated method for
+generating and testing operating system images to be used for specialized
+purposes, such as client VMs or purpose-built ATM distributions. The AUTHORS
+file in this directory provides more information, as well as contact
+information. Of course, feature suggestions, bug reports and just a simple
+thank-you are always welcome.
+
+Minitoo is BSD-licensed, which means you can pretty much do anything you want
+with the code, so as long as you give due credit. Check the LICENSE file in
+this directory for the fine print.
+
+
+* Outline
+
+As mentioned above, Minitoo is an automated build system for Gentoo-based
+operating systems. Its main purpose is to provide a framework for building
+minimal systems for specialized purposed, with a strong emphasis on low
+footprint, reduced storage size and increased security capabilities.
+
+While Minitoo is very good at automating things, that doesn't mean it has an
+easy learning curve: in fact, unless you only want to use features that are
+readily available from the start, it's necessary to have a strong grasp on
+Gentoo and Portage concepts, general Linux system initialization and
+configuration, and some shell (Bash) programming. It's an excellent program for
+power users, greatly speeding up the iterative process of building and testing
+during specialized system development.
+
+That's not to say you can't use the program if you're not a Linux "pro", not at
+all! Minitoo has quite an extensive documentation, which can help if you're just
+starting out. Here's a few resources that could come in handy:
+
+  - The main 'README' file, that you're reading right now.
+
+  - Minitoo's online help option, '-h', offers a lot of detail on each of the
+    programs many options, and examples on how to use each one. It's definitely
+    the best way to start exploring the program.
+
+  - The main configuration file, 'etc/minitoo.conf', is very well documented and
+    expands on the concepts presented by the online help. Since the software is
+    fully customizable via configuration file, it's a good idea to read
+    everything this file has to offer.
+
+  - The 'systems/' directory contains a few examples of systems that can be
+    built using Minitoo. All the configuration files are in place, and a few
+    extra packages are created to show off a few of its capabilities. Try using
+    the '-c' option to switch configuration directories and building one of
+    these example systems for practice.
+
+  - The 'etc/portage/README.portage' contains a few pointers on how to rebase
+    your Portage configuration for usage within the Minitoo system. It's not a
+    very good idea to use the host system Portage configuration for minimal
+    system building, so make sure you take a look.
+
+  - Finally, there's the 'etc/package.d/README.package' file, which is a 400+
+    line documentation file explaining everything you need to know in order to
+    successfully add a new package to the Minitoo build system. If you're an
+    experienced user who wants to customize the system to your particular needs,
+    this is the documentation you're looking for.
+
+  - If nothing's going your way, you can always send an email to the 'AUTHORS'
+    and ask for help. Don't be afraid to get in touch, it's always a pleasure to
+    help.
+
+
+* Portability notes
+
+This program has been written specifically for the Gentoo Linux distribution and
+its derivatives. The Portage package management system is assumed as available,
+and is used extensively by Minitoo to provide its installation framework.
+Attempting execution on other Linux distributions (e.g. Debian, Red Hat and
+Slackware derivatives), as well as other UNIX systems (e.g. FreeBSD, OpenBSD,
+NetBSD, Solaris, etc.) will not work.
+
+
+* Files in this directory
+
+  + AUTHORS
+      List of authors of this software, with contact information.
+
+  + bin/
+      Directory containing executable programs pertaining to the package.
+
+  + etc/
+      Directory containing configuration files for the Minitoo build system,
+      Portage and dracut configuration, as well as package installation
+      instruction files.
+
+  + lib/
+      Directory containing helper scripts and libraries used by the programs
+      located in the 'bin/' directory.
+
+  + LICENSE
+      Minitoo licensing information.
+
+  + README
+      This file.
+
+  + releases/
+      Only available from source code checkouts, not full release packages.
+      Directory containing all stable version packages, up until the most recent
+      release.
+
+  + systems/
+      Directory containing examples of systems to be built using Minitoo.
+      Mostly, this encompasses custom configuration files, system-specific
+      package installation files and deploy directories, and customized Portage
+      configuration. Can be used as reference for building new systems.
+
+  + TODO
+      List of unimplemented features that are planned for future versions.
+
+  + var/
+      Directory containing variable runtime data and the default deploy and
+      built directories, unless specified otherwise.
